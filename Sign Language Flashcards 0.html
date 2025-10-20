@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Learning Platform - Interactive Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2);
+            width: 95%;
+            max-width: 1200px;
+            padding: 2rem;
+            position: relative;
+            animation: slideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .title {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 120px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            padding: 0.5rem;
+        }
+
+        .mode-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin: 2rem auto;
+            width: 100%;
+            max-width: 400px;
+            height: 500px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+            transform: rotateY(180deg);
+        }
+
+        .hand-sign {
+            font-size: 8em;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .card-letter {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .card-word {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            font-size: 1.1em;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .progress-container {
+            margin: 2rem 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .voice-control {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .voice-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .voice-btn.listening {
+            animation: recording 1s infinite;
+        }
+
+        @keyframes recording {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback.correct {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2d3436;
+        }
+
+        .feedback.incorrect {
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            color: #2d3436;
+        }
+
+        .quiz-mode {
+            display: none;
+        }
+
+        .quiz-mode.active {
+            display: block;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-option {
+            padding: 1rem;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .quiz-option.correct {
+            border-color: #00b894;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .quiz-option.incorrect {
+            border-color: #e84393;
+            background: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            transition: right 0.3s ease;
+            padding: 2rem;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .settings-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1rem;
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+
+            .title {
+                font-size: 2em;
+            }
+
+            .flashcard-container {
+                height: 400px;
+            }
+
+            .hand-sign {
+                font-size: 6em;
+            }
+
+            .stats-bar {
+                gap: 1rem;
+            }
+
+            .controls {
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+    
+    <div class="settings-panel" id="settingsPanel">
+        <h3>Settings</h3>
+        <div style="margin: 2rem 0;">
+            <label>
+                <input type="checkbox" id="autoFlip" checked> Auto-flip cards
+            </label>
+        </div>
+        <div style="margin: 2rem 0;">
+            <label>
+                Study Set:
+                <select id="studySet" onchange="changeStudySet()">
+                    <option value="alphabet">Alphabet</option>
+                    <option value="numbers">Numbers</option>
+                    <option value="common">Common Words</option>
+                </select>
+            </label>
+        </div>
+        <div style="margin: 2rem 0;">
+            <label>
+                Speed:
+                <input type="range" id="speedControl" min="1" max="10" value="5" oninput="updateSpeed()">
+            </label>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <h1 class="title">ASL Learning Platform</h1>
+            <p class="subtitle">Master American Sign Language with Interactive Flashcards</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" id="totalCards">26</span>
+                <span class="stat-label">Total Cards</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="currentCard">1</span>
+                <span class="stat-label">Current</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="correctAnswers">0</span>
+                <span class="stat-label">Correct</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="accuracy">0%</span>
+                <span class="stat-label">Accuracy</span>
+            </div>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('study')">Study Mode</button>
+            <button class="mode-btn" onclick="setMode('quiz')">Quiz Mode</button>
+            <button class="mode-btn" onclick="setMode('voice')">Voice Test</button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="text-align: center; color: #666;">Progress: <span id="progressText">0%</span></div>
+        </div>
+
+        <div id="studyMode" class="study-mode">
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="card-face card-front">
+                        <div class="hand-sign" id="handSign">👋</div>
+                        <div class="card-description">Click to reveal the letter</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-letter" id="cardLetter">A</div>
+                        <div class="card-word" id="cardWord">Apple</div>
+                        <div class="card-description" id="cardDescription">The letter A in American Sign Language</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="quizMode" class="quiz-mode">
+            <div class="flashcard-container">
+                <div class="card-face card-front" style="position: relative;">
+                    <div class="hand-sign" id="quizHandSign">👋</div>
+                    <div class="card-description">What letter is this?</div>
+                </div>
+            </div>
+            <div class="quiz-options" id="quizOptions">
+                <!-- Quiz options will be generated here -->
+            </div>
+        </div>
+
+        <div id="voiceMode" class="quiz-mode">
+            <div class="flashcard-container">
+                <div class="card-face card-front" style="position: relative;">
+                    <div class="hand-sign" id="voiceHandSign">👋</div>
+                    <div class="card-description">Say the letter you see</div>
+                </div>
+            </div>
+            <div class="voice-control">
+                <button class="voice-btn" id="voiceBtn" onclick="startVoiceRecognition()">
+                    🎤 Start Voice Recognition
+                </button>
+                <div class="feedback" id="voiceFeedback"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="previousCard()">← Previous</button>
+            <button class="btn btn-primary" onclick="shuffleCards()">🔀 Shuffle</button>
+            <button class="btn btn-success" onclick="nextCard()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // ASL Data Sets
+        const dataSets = {
+            alphabet: [
+                { sign: '✊', letter: 'A', word: 'Apple', description: 'Closed fist with thumb alongside' },
+                { sign: '🤟', letter: 'B', word: 'Ball', description: 'Flat hand with fingers together' },
+                { sign: '👌', letter: 'C', word: 'Cat', description: 'Curved hand forming C shape' },
+                { sign: '👉', letter: 'D', word: 'Dog', description: 'Index finger pointing up' },
+                { sign: '✋', letter: 'E', word: 'Elephant', description: 'Flat hand with fingers bent' },
+                { sign: '👌', letter: 'F', word: 'Fish', description: 'OK sign with thumb and index' },
+                { sign: '👉', letter: 'G', word: 'Good', description: 'Index and thumb extended' },
+                { sign: '👈', letter: 'H', word: 'House', description: 'Index and middle finger extended' },
+                { sign: '🤏', letter: 'I', word: 'Ice', description: 'Pinky finger extended' },
+                { sign: '🤙', letter: 'J', word: 'Jump', description: 'Pinky with motion' },
+                { sign: '✌️', letter: 'K', word: 'Kite', description: 'Index and middle finger with thumb' },
+                { sign: '👆', letter: 'L', word: 'Love', description: 'Index finger and thumb forming L' },
+                { sign: '✊', letter: 'M', word: 'Moon', description: 'Closed fist with thumb under fingers' },
+                { sign: '✊', letter: 'N', word: 'Night', description: 'Closed fist with thumb between fingers' },
+                { sign: '👌', letter: 'O', word: 'Orange', description: 'All fingers forming O shape' },
+                { sign: '🤘', letter: 'P', word: 'Peace', description: 'Index and middle finger down' },
+                { sign: '👇', letter: 'Q', word: 'Queen', description: 'Index finger and thumb pointing down' },
+                { sign: '🤞', letter: 'R', word: 'Red', description: 'Index and middle finger crossed' },
+                { sign: '✊', letter: 'S', word: 'Sun', description: 'Closed fist with thumb over fingers' },
+                { sign: '👍', letter: 'T', word: 'Tree', description: 'Thumb between index and middle finger' },
+                { sign: '🤟', letter: 'U', word: 'Up', description: 'Index and middle finger together' },
+                { sign: '✌️', letter: 'V', word: 'Victory', description: 'Index and middle finger apart' },
+                { sign: '🤟', letter: 'W', word: 'Water', description: 'Three fingers extended' },
+                { sign: '🤘', letter: 'X', word: 'X-ray', description: 'Index finger hooked' },
+                { sign: '🤙', letter: 'Y', word: 'Yellow', description: 'Thumb and pinky extended' },
+                { sign: '👉', letter: 'Z', word: 'Zoo', description: 'Index finger in Z motion' }
+            ],
+            numbers: [
+                { sign: '👆', letter: '1', word: 'One', description: 'Index finger extended' },
+                { sign: '✌️', letter: '2', word: 'Two', description: 'Index and middle finger' },
+                { sign: '🤟', letter: '3', word: 'Three', description: 'Thumb, index, and middle' },
+                { sign: '🖖', letter: '4', word: 'Four', description: 'Four fingers extended' },
+                { sign: '✋', letter: '5', word: 'Five', description: 'All fingers extended' },
+                { sign: '🤙', letter: '6', word: 'Six', description: 'Thumb and pinky' },
+                { sign: '🤘', letter: '7', word: 'Seven', description: 'Pinky, ring, middle' },
+                { sign: '🤟', letter: '8', word: 'Eight', description: 'Middle, ring, pinky' },
+                { sign: '🤞', letter: '9', word: 'Nine', description: 'Index and middle crossed' },
+                { sign: '✊', letter: '10', word: 'Ten', description: 'Closed fist with thumb up' }
+            ],
+            common: [
+                { sign: '👋', letter: 'Hello', word: 'Hello', description: 'Wave hand back and forth' },
+                { sign: '👍', letter: 'Good', word: 'Good', description: 'Thumb up' },
+                { sign: '❤️', letter: 'Love', word: 'Love', description: 'Cross arms over heart' },
+                { sign: '🙏', letter: 'Please', word: 'Please', description: 'Flat hands together' },
+                { sign: '👏', letter: 'Thank You', word: 'Thank You', description: 'Hand from chin forward' }
+            ]
+        };
+
+        // Application State
+        let currentDataSet = 'alphabet';
+        let currentCards = dataSets[currentDataSet];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let currentMode = 'study';
+        let correctAnswers = 0;
+        let totalAttempts = 0;
+        let recognition = null;
+        let autoFlipTimer = null;
+
+        // Initialize the application
+        function init() {
+            updateCard();
+            updateStats();
+            setupVoiceRecognition();
+            
+            // Auto-flip timer
+            if (document.getElementById('autoFlip').checked) {
+                startAutoFlip();
+            }
+        }
+
+        // Card Management
+        function updateCard() {
+            const card = currentCards[currentIndex];
+            
+            // Update study mode
+            document.getElementById('handSign').textContent = card.sign;
+            document.getElementById('cardLetter').textContent = card.letter;
+            document.getElementById('cardWord').textContent = card.word;
+            document.getElementById('cardDescription').textContent = card.description;
+            
+            // Update quiz mode
+            document.getElementById('quizHandSign').textContent = card.sign;
+            
+            // Update voice mode
+            document.getElementById('voiceHandSign').textContent = card.sign;
+            
+            // Reset flip state
+            document.getElementById('flashcard').classList.remove('flipped');
+            isFlipped = false;
+            
+            updateStats();
+            updateProgress();
+            
+            if (currentMode === 'quiz') {
+                generateQuizOptions();
+            }
+        }
+
+        function flipCard() {
+            if (currentMode !== 'study') return;
+            
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % currentCards.length;
+            updateCard();
+            startAutoFlip();
+        }
+
+        function previousCard() {
+            currentIndex = (currentIndex - 1 + currentCards.length) % currentCards.length;
+            updateCard();
+            startAutoFlip();
+        }
+
+        function shuffleCards() {
+            for (let i = currentCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Mode Management
+        function setMode(mode) {
+            // Update active button
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Hide all modes
+            document.getElementById('studyMode').style.display = 'none';
+            document.getElementById('quizMode').classList.remove('active');
+            document.getElementById('voiceMode').classList.remove('active');
+            
+            currentMode = mode;
+            
+            // Show selected mode
+            if (mode === 'study') {
+                document.getElementById('studyMode').style.display = 'block';
+            } else if (mode === 'quiz') {
+                document.getElementById('quizMode').classList.add('active');
+                generateQuizOptions();
+            } else if (mode === 'voice') {
+                document.getElementById('voiceMode').classList.add('active');
+            }
+        }
+
+        // Quiz Mode
+        function generateQuizOptions() {
+            const container = document.getElementById('quizOptions');
+            const correctAnswer = currentCards[currentIndex].letter;
+            
+            // Generate wrong options
+            const allOptions = currentCards.map(card => card.letter);
+            const wrongOptions = allOptions.filter(option => option !== correctAnswer);
+            
+            // Select 3 random wrong options
+            const selectedWrong = [];
+            while (selectedWrong.length < 3 && selectedWrong.length < wrongOptions.length) {
+                const randomOption = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+                if (!selectedWrong.includes(randomOption)) {
+                    selectedWrong.push(randomOption);
+                }
+            }
+            
+            // Combine and shuffle options
+            const options = [correctAnswer, ...selectedWrong];
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            
+            // Create option elements
+            container.innerHTML = '';
+            options.forEach(option => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'quiz-option';
+                optionEl.textContent = option;
+                optionEl.onclick = () => selectQuizOption(optionEl, option, correctAnswer);
+                container.appendChild(optionEl);
+            });
+        }
+
+        function selectQuizOption(element, selected, correct) {
+            totalAttempts++;
+            
+            // Disable all options
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.onclick = null;
+                if (opt.textContent === correct) {
+                    opt.classList.add('correct');
+                } else if (opt.textContent === selected && selected !== correct) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            if (selected === correct) {
+                correctAnswers++;
+                showFeedback('Correct! Great job!', 'correct');
+            } else {
+                showFeedback(`Incorrect. The answer was ${correct}`, 'incorrect');
+            }
+            
+            updateStats();
+            
+            // Auto advance after 2 seconds
+            setTimeout(() => {
+                nextCard();
+            }, 2000);
+        }
+
+        // Voice Recognition
+        function setupVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = function(event) {
+                    const result = event.results[0][0].transcript.toUpperCase().trim();
+                    checkVoiceAnswer(result);
+                };
+                
+                recognition.onerror = function(event) {
+                    showFeedback('Voice recognition error. Please try again.', 'incorrect');
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                };
+                
+                recognition.onend = function() {
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                };
+            } else {
+                document.getElementById('voiceBtn').textContent = 'Voice recognition not supported';
+                document.getElementById('voiceBtn').disabled = true;
+            }
+        }
+
+        function startVoiceRecognition() {
+            if (!recognition) return;
+            
+            document.getElementById('voiceBtn').classList.add('listening');
+            recognition.start();
+        }
+
+        function checkVoiceAnswer(spokenText) {
+            const correctAnswer = currentCards[currentIndex].letter.toUpperCase();
+            totalAttempts++;
+            
+            if (spokenText === correctAnswer) {
+                correctAnswers++;
+                showFeedback('Correct! Well done!', 'correct');
+                setTimeout(() => nextCard(), 1500);
+            } else {
+                showFeedback(`You said "${spokenText}". The correct answer is "${correctAnswer}"`, 'incorrect');
+            }
+            
+            updateStats();
+        }
+
+        // Feedback System
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('voiceFeedback');
+            feedback.textContent = message;
+            feedback.className = `feedback show ${type}`;
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 3000);
+        }
+
+        // Statistics and Progress
+        function updateStats() {
+            document.getElementById('totalCards').textContent = currentCards.length;
+            document.getElementById('currentCard').textContent = currentIndex + 1;
+            document.getElementById('correctAnswers').textContent = correctAnswers;
+            
+            const accuracy = totalAttempts > 0 ? Math.round((correctAnswers / totalAttempts) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function updateProgress() {
+            const progress = ((currentIndex + 1) / currentCards.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+        }
+
+        // Settings Management
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        function changeStudySet() {
+            const newSet = document.getElementById('studySet').value;
+            currentDataSet = newSet;
+            currentCards = dataSets[newSet];
+            currentIndex = 0;
+            correctAnswers = 0;
+            totalAttempts = 0;
+            updateCard();
+            updateStats();
+        }
+
+        function updateSpeed() {
+            const speed = document.getElementById('speedControl').value;
+            // Speed affects auto-flip timing
+            if (autoFlipTimer) {
+                clearTimeout(autoFlipTimer);
+                startAutoFlip();
+            }
+        }
+
+        function startAutoFlip() {
+            if (autoFlipTimer) {
+                clearTimeout(autoFlipTimer);
+            }
+            
+            if (document.getElementById('autoFlip').checked && currentMode === 'study') {
+                const speed = document.getElementById('speedControl').value;
+                const delay = (11 - speed) * 1000; // Convert to milliseconds
+                
+                autoFlipTimer = setTimeout(() => {
+                    if (!isFlipped) {
+                        flipCard();
+                    }
+                }, delay);
+            }
+        }
+
+        // Keyboard Controls
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'ArrowLeft':
+                    previousCard();
+                    break;
+                case 'ArrowRight':
+                case ' ':
+                    if (currentMode === 'study') {
+                        flipCard();
+                    } else {
+                        nextCard();
+                    }
+                    break;
+                case 'ArrowUp':
+                    nextCard();
+                    break;
+                case 'Enter':
+                    if (currentMode === 'voice') {
+                        startVoiceRecognition();
+                    }
+                    break;
+                case 's':
+                    shuffleCards();
+                    break;
+            }
+        });
+
+        // Touch/Swipe Support
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function(event) {
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(event) {
+            if (!touchStartX || !touchStartY) return;
+            
+            const touchEndX = event.changedTouches[0].clientX;
+            const touchEndY = event.changedTouches[0].clientY;
+            
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                    if (diffX > 0) {
+                        nextCard(); // Swipe left - next card
+                    } else {
+                        previousCard(); // Swipe right - previous card
+                    }
+                }
+            }
+            
+            touchStartX = 0;
+            touchStartY = 0;
+        });
+
+        // Performance Optimization
+        function preloadNextCard() {
+            // Preload next card data for smoother transitions
+            const nextIndex = (currentIndex + 1) % currentCards.length;
+            const nextCard = currentCards[nextIndex];
+            // Could preload images or other resources here
+        }
+
+        // Accessibility Features
+        function announceCard(card) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(
+                    `The sign shows ${card.letter}. ${card.description}`
+                );
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Advanced Learning Features
+        function trackDifficultCards() {
+            // Track which cards user gets wrong most often
+            // This could be expanded to create personalized review sessions
+        }
+
+        function generateProgressReport() {
+            const report = {
+                totalCards: currentCards.length,
+                cardsStudied: currentIndex + 1,
+                accuracy: totalAttempts > 0 ? (correctAnswers / totalAttempts) * 100 : 0,
+                timeSpent: Date.now() - startTime,
+                difficultCards: [] // Could track problematic cards
+            };
+            
+            console.log('Learning Progress Report:', report);
+            return report;
+        }
+
+        // Achievement System
+        const achievements = [
+            { id: 'first_card', name: 'First Steps', description: 'Complete your first card' },
+            { id: 'perfect_quiz', name: 'Perfect Score', description: 'Get 100% on a quiz' },
+            { id: 'voice_master', name: 'Voice Master', description: 'Use voice recognition successfully' },
+            { id: 'speed_demon', name: 'Speed Demon', description: 'Complete 10 cards in under 2 minutes' }
+        ];
+
+        function checkAchievements() {
+            // Implementation for achievement checking
+            // Could show toast notifications for achievements
+        }
+
+        // Data Persistence (using memory since localStorage isn't available)
+        let userProgress = {
+            currentSet: 'alphabet',
+            completedSets: [],
+            achievements: [],
+            stats: {
+                totalCorrect: 0,
+                totalAttempts: 0,
+                studyTime: 0
+            }
+        };
+
+        function saveProgress() {
+            userProgress.stats.totalCorrect = correctAnswers;
+            userProgress.stats.totalAttempts = totalAttempts;
+            userProgress.currentSet = currentDataSet;
+            // In a real app, this would save to a backend or localStorage
+        }
+
+        function loadProgress() {
+            // In a real app, this would load from a backend or localStorage
+            correctAnswers = userProgress.stats.totalCorrect;
+            totalAttempts = userProgress.stats.totalAttempts;
+            updateStats();
+        }
+
+        // Initialize tracking
+        const startTime = Date.now();
+
+        // Start the application
+        window.addEventListener('load', function() {
+            init();
+            loadProgress();
+            
+            // Add smooth scroll behavior
+            document.documentElement.style.scrollBehavior = 'smooth';
+            
+            // Add focus management for accessibility
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Tab') {
+                    document.body.classList.add('keyboard-navigation');
+                }
+            });
+            
+            document.addEventListener('mousedown', function() {
+                document.body.classList.remove('keyboard-navigation');
+            });
+        });
+
+        // Cleanup function
+        window.addEventListener('beforeunload', function() {
+            saveProgress();
+            if (autoFlipTimer) {
+                clearTimeout(autoFlipTimer);
+            }
+            if (recognition) {
+                recognition.stop();
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', function(event) {
+            console.error('Application Error:', event.error);
+            showFeedback('An error occurred. Please refresh the page.', 'incorrect');
+        });
+
+        // Service Worker for offline capability (conceptual)
+        if ('serviceWorker' in navigator) {
+            // In a production app, this would register a service worker
+            // for offline functionality
+        }
+    </script>
+</body>
+</html>
