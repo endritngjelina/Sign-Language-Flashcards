@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Master - Interactive Sign Language Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #007AFF;
+            --primary-dark: #0056CC;
+            --primary-light: #5AC8FA;
+            --secondary: #5856D6;
+            --secondary-light: #AF52DE;
+            --success: #34C759;
+            --warning: #FF9500;
+            --error: #FF3B30;
+            --background: linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%);
+            --surface: #FFFFFF;
+            --surface-secondary: #F9F9F9;
+            --surface-elevated: #FEFEFE;
+            --surface-glass: rgba(255, 255, 255, 0.8);
+            --text-primary: #1D1D1F;
+            --text-secondary: #6D6D80;
+            --text-tertiary: #8E8E93;
+            --border: #D1D1D6;
+            --border-light: #E5E5EA;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-elevated: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.12);
+            --border-radius: 16px;
+            --border-radius-small: 8px;
+            --border-radius-large: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            --transition-fast: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            --gradient-surface: linear-gradient(145deg, #FFFFFF 0%, #F8F9FA 100%);
+            --blur: blur(20px);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(88, 86, 214, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(52, 199, 89, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: 500;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) 0.2s both;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface-glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-light);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .control-group:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--primary);
+        }
+
+        .control-group:hover::before {
+            left: 100%;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input {
+            padding: 10px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--border-radius-small);
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: var(--surface-elevated);
+            color: var(--text-primary);
+            transition: var(--transition);
+            outline: none;
+            min-width: 120px;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        select:hover, input:hover {
+            border-color: var(--primary);
+            background: var(--surface);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) 0.4s both;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: var(--surface-glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-light);
+            min-width: 140px;
+            position: relative;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .stat-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .flashcard-container {
+            perspective: 1200px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            animation: fadeInUp 1s cubic-bezier(0.4, 0.0, 0.2, 1) 0.8s both;
+        }
+
+        .flashcard {
+            width: min(450px, 90vw);
+            height: min(550px, 70vh);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            filter: drop-shadow(var(--shadow-card));
+        }
+
+        .flashcard:hover {
+            transform: rotateY(5deg) rotateX(5deg) scale(1.02);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard.flipped:hover {
+            transform: rotateY(185deg) rotateX(5deg) scale(1.02);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius-large);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 40px;
+            background: var(--gradient-surface);
+            border: 2px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 122, 255, 0.1) 0%, transparent 70%),
+                radial-gradient(circle at 70% 70%, rgba(88, 86, 214, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .card-face > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: var(--gradient-surface);
+        }
+
+        .hand-sign {
+            font-size: clamp(6rem, 15vw, 10rem);
+            margin-bottom: 30px;
+            user-select: none;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: var(--transition-fast);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .card-letter {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .card-word {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+
+        .card-description {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.5;
+            max-width: 280px;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 600px;
+            height: 12px;
+            background: var(--border-light);
+            border-radius: 6px;
+            margin: 0 auto 40px;
+            overflow: hidden;
+            position: relative;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) 0.6s both;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0) 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                rgba(255, 255, 255, 0) 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border-radius: 6px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+            border-radius: 6px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s cubic-bezier(0.4, 0.0, 0.2, 1) 1s both;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            min-width: 120px;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface-glass);
+            color: var(--text-primary);
+            border: 2px solid var(--border-light);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-elevated);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--primary);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #28A745 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 199, 89, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #E6830B 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 149, 0, 0.4);
+        }
+
+        .btn-warning:hover {
+            background: #E6830B;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+        }
+
+        .voice-controls, .quiz-mode, .accessibility-controls {
+            background: var(--surface-glass);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-radius: var(--border-radius-large);
+            padding: 30px;
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--border-light);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .voice-controls::before, .quiz-mode::before, .accessibility-controls::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-secondary);
+            opacity: 0.8;
+        }
+
+        .voice-controls:hover, .quiz-mode:hover, .accessibility-controls:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .voice-controls h3, .quiz-mode h3, .accessibility-controls h3 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .voice-controls h3::before {
+            content: '🎤';
+            font-size: 1.2em;
+        }
+
+        .quiz-mode h3::before {
+            content: '🧠';
+            font-size: 1.2em;
+        }
+
+        .accessibility-controls h3::before {
+            content: '♿';
+            font-size: 1.2em;
+        }
+
+        .voice-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: var(--surface-elevated);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-light);
+        }
+
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--error);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .status-indicator.listening {
+            background: var(--success);
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        .status-indicator.listening::after {
+            border-color: var(--success);
+            animation: pulseRing 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        /* Enhanced Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: scale(1.1); 
+                opacity: 0.8; 
+            }
+        }
+
+        @keyframes pulseRing {
+            0% { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: scale(1.8); 
+                opacity: 0; 
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: scale(1.05); 
+                opacity: 0.9; 
+            }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes correctBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .flashcard {
+                width: min(350px, 95vw);
+                height: min(450px, 60vh);
+            }
+
+            .hand-sign {
+                font-size: 6rem;
+            }
+
+            .card-letter {
+                font-size: 3.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .control-group {
+                width: 100%;
+                max-width: 320px;
+                justify-content: space-between;
+            }
+
+            .stats-bar {
+                gap: 20px;
+            }
+
+            .stat-item {
+                min-width: 120px;
+                padding: 15px 20px;
+            }
+
+            .accessibility-options {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .action-buttons {
+                gap: 15px;
+            }
+
+            .btn {
+                min-width: 100px;
+                padding: 12px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flashcard {
+                width: min(300px, 90vw);
+                height: min(400px, 55vh);
+            }
+
+            .hand-sign {
+                font-size: 5rem;
+            }
+
+            .card-letter {
+                font-size: 2.5rem;
+            }
+
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* High Contrast Mode Enhancements */
+        .high-contrast {
+            --background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            --surface: #2A2A2A;
+            --surface-secondary: #3A3A3A;
+            --surface-elevated: #333333;
+            --surface-glass: rgba(42, 42, 42, 0.9);
+            --text-primary: #FFFFFF;
+            --text-secondary: #CCCCCC;
+            --text-tertiary: #AAAAAA;
+            --border: #555555;
+            --border-light: #444444;
+        }
+
+        /* Large Text Mode Enhancements */
+        .large-text .card-letter {
+            font-size: clamp(4rem, 10vw, 6rem);
+        }
+
+        .large-text .card-word {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+        }
+
+        .large-text .hand-sign {
+            font-size: clamp(8rem, 18vw, 12rem);
+        }
+
+        .large-text .btn {
+            font-size: 1.1rem;
+            padding: 16px 32px;
+        }
+
+        /* Loading Animation Enhancement */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .scale-in {
+            animation: scaleIn 0.4s ease both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Focus States for Accessibility */
+        .btn:focus,
+        .quiz-option:focus,
+        select:focus,
+        input:focus,
+        .checkbox-group:focus-within {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Reduced Motion Preferences */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .quiz-option {
+            padding: 20px 15px;
+            background: var(--surface-elevated);
+            border: 3px solid var(--border-light);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            font-weight: 600;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.08);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--shadow-light);
+        }
+
+        .quiz-option:hover::before {
+            left: 100%;
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--success);
+            transform: scale(1.05);
+            animation: correctBounce 0.6s ease;
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--error);
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--error);
+            animation: shake 0.5s ease;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 20px 25px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feedback::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            transition: var(--transition);
+        }
+
+        .feedback.correct {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--success);
+            border: 2px solid rgba(52, 199, 89, 0.3);
+            animation: slideInUp 0.5s ease;
+        }
+
+        .feedback.correct::before {
+            background: var(--success);
+        }
+
+        .feedback.incorrect {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--error);
+            border: 2px solid rgba(255, 59, 48, 0.3);
+            animation: slideInUp 0.5s ease;
+        }
+
+        .feedback.incorrect::before {
+            background: var(--error);
+        }
+
+        .accessibility-options {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: var(--surface-elevated);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .high-contrast {
+            --background: #000000;
+            --surface: #1A1A1A;
+            --surface-secondary: #2A2A2A;
+            --text-primary: #FFFFFF;
+            --text-secondary: #CCCCCC;
+            --border: #444444;
+        }
+
+        .large-text .card-letter {
+            font-size: 5rem;
+        }
+
+        .large-text .card-word {
+            font-size: 2rem;
+        }
+
+        .large-text .hand-sign {
+            font-size: 10rem;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .flashcard {
+                width: 320px;
+                height: 420px;
+            }
+
+            .hand-sign {
+                font-size: 6rem;
+            }
+
+            .card-letter {
+                font-size: 3rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .control-group {
+                width: 100%;
+                max-width: 300px;
+                justify-content: space-between;
+            }
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>ASL Master</h1>
+            <p>Professional American Sign Language Learning Platform</p>
+        </header>
+
+        <div class="accessibility-controls">
+            <h3>Accessibility Options</h3>
+            <div class="accessibility-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="highContrast">
+                    <label for="highContrast">High Contrast</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="largeText">
+                    <label for="largeText">Large Text</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="reduceMotion">
+                    <label for="reduceMotion">Reduce Motion</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="studyMode">Study Mode:</label>
+                <select id="studyMode">
+                    <option value="alphabet">Alphabet</option>
+                    <option value="numbers">Numbers</option>
+                    <option value="common-words">Common Words</option>
+                    <option value="colors">Colors</option>
+                    <option value="family">Family</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="difficulty">Difficulty:</label>
+                <select id="difficulty">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="autoFlip">Auto-flip (seconds):</label>
+                <input type="number" id="autoFlip" min="0" max="10" step="0.5" value="0">
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" id="currentCard">1</span>
+                <span class="stat-label">Current</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalCards">26</span>
+                <span class="stat-label">Total</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="correctAnswers">0</span>
+                <span class="stat-label">Correct</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="streakCount">0</span>
+                <span class="stat-label">Streak</span>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-face card-front">
+                    <div class="hand-sign" id="handSign">🤚</div>
+                    <div class="card-description">Click to reveal the letter</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-letter" id="cardLetter">A</div>
+                    <div class="card-word" id="cardWord">Apple</div>
+                    <div class="card-description" id="cardDescription">The first letter of the alphabet</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="prevBtn">← Previous</button>
+            <button class="btn btn-primary" id="flipBtn">Flip Card</button>
+            <button class="btn btn-secondary" id="nextBtn">Next →</button>
+            <button class="btn btn-warning" id="shuffleBtn">🔀 Shuffle</button>
+        </div>
+
+        <div class="voice-controls">
+            <h3>Voice Recognition Testing</h3>
+            <div class="voice-status">
+                <div class="status-indicator" id="voiceIndicator"></div>
+                <span id="voiceStatus">Voice recognition ready</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-success" id="startVoiceBtn">🎤 Start Voice Test</button>
+                <button class="btn btn-secondary" id="stopVoiceBtn" disabled>⏹️ Stop</button>
+            </div>
+            <div id="voiceResult" class="feedback hidden"></div>
+        </div>
+
+        <div class="quiz-mode" id="quizMode">
+            <h3>Quiz Mode</h3>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="startQuizBtn">Start Quiz</button>
+                <button class="btn btn-secondary" id="endQuizBtn" disabled>End Quiz</button>
+            </div>
+            <div id="quizFeedback" class="feedback hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        class ASLFlashcards {
+            constructor() {
+                this.currentCardIndex = 0;
+                this.isFlipped = false;
+                this.correctAnswers = 0;
+                this.streakCount = 0;
+                this.maxStreak = 0;
+                this.autoFlipTimer = null;
+                this.isQuizMode = false;
+                this.quizAnswered = false;
+                this.currentQuizAnswer = '';
+                
+                // Web Speech API
+                this.recognition = null;
+                this.isListening = false;
+                
+                // ASL Data
+                this.datasets = {
+                    alphabet: [
+                        {sign: '👋', letter: 'A', word: 'Apple', description: 'The first letter of the alphabet'},
+                        {sign: '✋', letter: 'B', word: 'Ball', description: 'The second letter of the alphabet'},
+                        {sign: '🤏', letter: 'C', word: 'Cat', description: 'The third letter of the alphabet'},
+                        {sign: '👉', letter: 'D', word: 'Dog', description: 'The fourth letter of the alphabet'},
+                        {sign: '🖐️', letter: 'E', word: 'Elephant', description: 'The fifth letter of the alphabet'},
+                        {sign: '🤌', letter: 'F', word: 'Fish', description: 'The sixth letter of the alphabet'},
+                        {sign: '👍', letter: 'G', word: 'Goat', description: 'The seventh letter of the alphabet'},
+                        {sign: '✌️', letter: 'H', word: 'House', description: 'The eighth letter of the alphabet'},
+                        {sign: '🤙', letter: 'I', word: 'Ice', description: 'The ninth letter of the alphabet'},
+                        {sign: '🤘', letter: 'J', word: 'Jump', description: 'The tenth letter of the alphabet'},
+                        {sign: '🤚', letter: 'K', word: 'Kite', description: 'The eleventh letter of the alphabet'},
+                        {sign: '👌', letter: 'L', word: 'Lion', description: 'The twelfth letter of the alphabet'},
+                        {sign: '🤛', letter: 'M', word: 'Mouse', description: 'The thirteenth letter of the alphabet'},
+                        {sign: '🤜', letter: 'N', word: 'Nest', description: 'The fourteenth letter of the alphabet'},
+                        {sign: '👊', letter: 'O', word: 'Orange', description: 'The fifteenth letter of the alphabet'},
+                        {sign: '🫳', letter: 'P', word: 'Pen', description: 'The sixteenth letter of the alphabet'},
+                        {sign: '🫴', letter: 'Q', word: 'Queen', description: 'The seventeenth letter of the alphabet'},
+                        {sign: '🖖', letter: 'R', word: 'Robot', description: 'The eighteenth letter of the alphabet'},
+                        {sign: '✊', letter: 'S', word: 'Sun', description: 'The nineteenth letter of the alphabet'},
+                        {sign: '🫵', letter: 'T', word: 'Tree', description: 'The twentieth letter of the alphabet'},
+                        {sign: '🤟', letter: 'U', word: 'Umbrella', description: 'The twenty-first letter of the alphabet'},
+                        {sign: '🫰', letter: 'V', word: 'Violin', description: 'The twenty-second letter of the alphabet'},
+                        {sign: '🤞', letter: 'W', word: 'Water', description: 'The twenty-third letter of the alphabet'},
+                        {sign: '🫶', letter: 'X', word: 'X-ray', description: 'The twenty-fourth letter of the alphabet'},
+                        {sign: '🤝', letter: 'Y', word: 'Yellow', description: 'The twenty-fifth letter of the alphabet'},
+                        {sign: '👐', letter: 'Z', word: 'Zebra', description: 'The twenty-sixth letter of the alphabet'}
+                    ],
+                    numbers: [
+                        {sign: '☝️', letter: '1', word: 'One', description: 'The number one'},
+                        {sign: '✌️', letter: '2', word: 'Two', description: 'The number two'},
+                        {sign: '🤟', letter: '3', word: 'Three', description: 'The number three'},
+                        {sign: '🖖', letter: '4', word: 'Four', description: 'The number four'},
+                        {sign: '🖐️', letter: '5', word: 'Five', description: 'The number five'},
+                        {sign: '🤚', letter: '6', word: 'Six', description: 'The number six'},
+                        {sign: '🤏', letter: '7', word: 'Seven', description: 'The number seven'},
+                        {sign: '🤘', letter: '8', word: 'Eight', description: 'The number eight'},
+                        {sign: '🤙', letter: '9', word: 'Nine', description: 'The number nine'},
+                        {sign: '✊', letter: '10', word: 'Ten', description: 'The number ten'}
+                    ],
+                    'common-words': [
+                        {sign: '👋', letter: 'Hello', word: 'Greeting', description: 'A common greeting'},
+                        {sign: '🤝', letter: 'Thank You', word: 'Gratitude', description: 'Expressing thanks'},
+                        {sign: '👍', letter: 'Good', word: 'Positive', description: 'Something positive'},
+                        {sign: '👎', letter: 'Bad', word: 'Negative', description: 'Something negative'},
+                        {sign: '🤷', letter: 'Sorry', word: 'Apology', description: 'Expressing regret'},
+                        {sign: '👌', letter: 'OK', word: 'Agreement', description: 'Showing agreement'}
+                    ],
+                    colors: [
+                        {sign: '🔴', letter: 'Red', word: 'Color', description: 'The color red'},
+                        {sign: '🔵', letter: 'Blue', word: 'Color', description: 'The color blue'},
+                        {sign: '🟢', letter: 'Green', word: 'Color', description: 'The color green'},
+                        {sign: '🟡', letter: 'Yellow', word: 'Color', description: 'The color yellow'},
+                        {sign: '🟠', letter: 'Orange', word: 'Color', description: 'The color orange'},
+                        {sign: '🟣', letter: 'Purple', word: 'Color', description: 'The color purple'}
+                    ],
+                    family: [
+                        {sign: '👨', letter: 'Father', word: 'Parent', description: 'Male parent'},
+                        {sign: '👩', letter: 'Mother', word: 'Parent', description: 'Female parent'},
+                        {sign: '👶', letter: 'Baby', word: 'Child', description: 'Young child'},
+                        {sign: '👦', letter: 'Boy', word: 'Child', description: 'Male child'},
+                        {sign: '👧', letter: 'Girl', word: 'Child', description: 'Female child'},
+                        {sign: '👴', letter: 'Grandfather', word: 'Elder', description: 'Male grandparent'},
+                        {sign: '👵', letter: 'Grandmother', word: 'Elder', description: 'Female grandparent'}
+                    ]
+                };
+                
+                this.currentDataset = this.datasets.alphabet;
+                this.shuffledDataset = [...this.currentDataset];
+                
+                this.initializeApp();
+                this.setupEventListeners();
+                this.initializeVoiceRecognition();
+                this.updateCard();
+                this.updateStats();
+            }
+            
+            initializeApp() {
+                // Initialize accessibility features
+                this.setupAccessibility();
+                
+                // Initialize auto-flip
+                this.setupAutoFlip();
+            }
+            
+            setupAccessibility() {
+                const highContrast = document.getElementById('highContrast');
+                const largeText = document.getElementById('largeText');
+                const reduceMotion = document.getElementById('reduceMotion');
+                
+                highContrast.addEventListener('change', (e) => {
+                    document.body.classList.toggle('high-contrast', e.target.checked);
+                });
+                
+                largeText.addEventListener('change', (e) => {
+                    document.body.classList.toggle('large-text', e.target.checked);
+                });
+                
+                reduceMotion.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        document.documentElement.style.setProperty('--transition', 'none');
+                    } else {
+                        document.documentElement.style.setProperty('--transition', 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)');
+                    }
+                });
+            }
+            
+            setupEventListeners() {
+                // Card interaction
+                document.getElementById('flashcard').addEventListener('click', () => this.flipCard());
+                document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
+                document.getElementById('prevBtn').addEventListener('click', () => this.previousCard());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextCard());
+                document.getElementById('shuffleBtn').addEventListener('click', () => this.shuffleCards());
+                
+                // Controls
+                document.getElementById('studyMode').addEventListener('change', (e) => this.changeStudyMode(e.target.value));
+                document.getElementById('autoFlip').addEventListener('change', (e) => this.setupAutoFlip());
+                
+                // Voice controls
+                document.getElementById('startVoiceBtn').addEventListener('click', () => this.startVoiceRecognition());
+                document.getElementById('stopVoiceBtn').addEventListener('click', () => this.stopVoiceRecognition());
+                
+                // Quiz controls
+                document.getElementById('startQuizBtn').addEventListener('click', () => this.startQuiz());
+                document.getElementById('endQuizBtn').addEventListener('click', () => this.endQuiz());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+            
+            handleKeyboard(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+                
+                switch(e.key) {
+                    case ' ':
+                    case 'Enter':
+                        e.preventDefault();
+                        this.flipCard();
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        this.previousCard();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        this.nextCard();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        this.shuffleCards();
+                        break;
+                    case 'q':
+                        e.preventDefault();
+                        if (!this.isQuizMode) {
+                            this.startQuiz();
+                        } else {
+                            this.endQuiz();
+                        }
+                        break;
+                }
+            }
+            
+            setupAutoFlip() {
+                if (this.autoFlipTimer) {
+                    clearInterval(this.autoFlipTimer);
+                    this.autoFlipTimer = null;
+                }
+                
+                const autoFlipSeconds = parseFloat(document.getElementById('autoFlip').value);
+                if (autoFlipSeconds > 0) {
+                    this.autoFlipTimer = setInterval(() => {
+                        if (!this.isQuizMode) {
+                            this.flipCard();
+                        }
+                    }, autoFlipSeconds * 1000);
+                }
+            }
+            
+            changeStudyMode(mode) {
+                this.currentDataset = this.datasets[mode];
+                this.shuffledDataset = [...this.currentDataset];
+                this.currentCardIndex = 0;
+                this.isFlipped = false;
+                this.updateCard();
+                this.updateStats();
+                this.endQuiz();
+            }
+            
+            flipCard() {
+                if (this.isQuizMode && !this.quizAnswered) return;
+                
+                this.isFlipped = !this.isFlipped;
+                const flashcard = document.getElementById('flashcard');
+                flashcard.classList.toggle('flipped', this.isFlipped);
+            }
+            
+            nextCard() {
+                this.currentCardIndex = (this.currentCardIndex + 1) % this.shuffledDataset.length;
+                this.isFlipped = false;
+                this.quizAnswered = false;
+                this.updateCard();
+                this.updateStats();
+                if (this.isQuizMode) {
+                    this.generateQuizOptions();
+                }
+            }
+            
+            previousCard() {
+                this.currentCardIndex = (this.currentCardIndex - 1 + this.shuffledDataset.length) % this.shuffledDataset.length;
+                this.isFlipped = false;
+                this.quizAnswered = false;
+                this.updateCard();
+                this.updateStats();
+                if (this.isQuizMode) {
+                    this.generateQuizOptions();
+                }
+            }
+            
+            shuffleCards() {
+                this.shuffledDataset = [...this.currentDataset].sort(() => Math.random() - 0.5);
+                this.currentCardIndex = 0;
+                this.isFlipped = false;
+                this.quizAnswered = false;
+                this.updateCard();
+                this.updateStats();
+                if (this.isQuizMode) {
+                    this.generateQuizOptions();
+                }
+            }
+            
+            updateCard() {
+                const currentCard = this.shuffledDataset[this.currentCardIndex];
+                const flashcard = document.getElementById('flashcard');
+                
+                document.getElementById('handSign').textContent = currentCard.sign;
+                document.getElementById('cardLetter').textContent = currentCard.letter;
+                document.getElementById('cardWord').textContent = currentCard.word;
+                document.getElementById('cardDescription').textContent = currentCard.description;
+                
+                flashcard.classList.remove('flipped');
+                this.isFlipped = false;
+                
+                // Add subtle animation
+                flashcard.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    flashcard.style.transform = 'scale(1)';
+                }, 150);
+            }
+            
+            updateStats() {
+                document.getElementById('currentCard').textContent = this.currentCardIndex + 1;
+                document.getElementById('totalCards').textContent = this.shuffledDataset.length;
+                document.getElementById('correctAnswers').textContent = this.correctAnswers;
+                document.getElementById('streakCount').textContent = this.streakCount;
+                
+                const progress = ((this.currentCardIndex + 1) / this.shuffledDataset.length) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+            }
+            
+            initializeVoiceRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
+                    
+                    this.recognition.onstart = () => {
+                        this.isListening = true;
+                        document.getElementById('voiceIndicator').classList.add('listening');
+                        document.getElementById('voiceStatus').textContent = 'Listening... Say the letter or word you see';
+                        document.getElementById('startVoiceBtn').disabled = true;
+                        document.getElementById('stopVoiceBtn').disabled = false;
+                    };
+                    
+                    this.recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript.toLowerCase().trim();
+                        this.processVoiceResult(result);
+                    };
+                    
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.stopVoiceRecognition();
+                        document.getElementById('voiceStatus').textContent = 'Voice recognition error. Please try again.';
+                    };
+                    
+                    this.recognition.onend = () => {
+                        this.stopVoiceRecognition();
+                    };
+                } else {
+                    document.getElementById('startVoiceBtn').disabled = true;
+                    document.getElementById('voiceStatus').textContent = 'Voice recognition not supported in this browser';
+                }
+            }
+            
+            startVoiceRecognition() {
+                if (this.recognition && !this.isListening) {
+                    this.recognition.start();
+                }
+            }
+            
+            stopVoiceRecognition() {
+                if (this.recognition && this.isListening) {
+                    this.recognition.stop();
+                }
+                this.isListening = false;
+                document.getElementById('voiceIndicator').classList.remove('listening');
+                document.getElementById('voiceStatus').textContent = 'Voice recognition ready';
+                document.getElementById('startVoiceBtn').disabled = false;
+                document.getElementById('stopVoiceBtn').disabled = true;
+            }
+            
+            processVoiceResult(result) {
+                const currentCard = this.shuffledDataset[this.currentCardIndex];
+                const correctAnswers = [
+                    currentCard.letter.toLowerCase(),
+                    currentCard.word.toLowerCase(),
+                    currentCard.description.toLowerCase()
+                ];
+                
+                const isCorrect = correctAnswers.some(answer => 
+                    result.includes(answer) || answer.includes(result)
+                );
+                
+                const resultDiv = document.getElementById('voiceResult');
+                resultDiv.classList.remove('hidden', 'correct', 'incorrect');
+                
+                if (isCorrect) {
+                    resultDiv.classList.add('correct');
+                    resultDiv.textContent = `✓ Correct! You said: "${result}"`;
+                    this.correctAnswers++;
+                    this.streakCount++;
+                    this.maxStreak = Math.max(this.maxStreak, this.streakCount);
+                } else {
+                    resultDiv.classList.add('incorrect');
+                    resultDiv.textContent = `✗ You said: "${result}". Try: "${currentCard.letter}" or "${currentCard.word}"`;
+                    this.streakCount = 0;
+                }
+                
+                this.updateStats();
+                
+                // Auto-advance after voice recognition
+                setTimeout(() => {
+                    if (!this.isFlipped) {
+                        this.flipCard();
+                    }
+                    setTimeout(() => {
+                        this.nextCard();
+                        resultDiv.classList.add('hidden');
+                    }, 2000);
+                }, 1500);
+            }
+            
+            startQuiz() {
+                this.isQuizMode = true;
+                this.quizAnswered = false;
+                document.getElementById('startQuizBtn').disabled = true;
+                document.getElementById('endQuizBtn').disabled = false;
+                document.getElementById('quizMode').style.background = 'rgba(0, 122, 255, 0.05)';
+                this.generateQuizOptions();
+            }
+            
+            endQuiz() {
+                this.isQuizMode = false;
+                this.quizAnswered = false;
+                document.getElementById('startQuizBtn').disabled = false;
+                document.getElementById('endQuizBtn').disabled = true;
+                document.getElementById('quizMode').style.background = 'var(--surface)';
+                document.getElementById('quizOptions').innerHTML = '';
+                document.getElementById('quizFeedback').classList.add('hidden');
+            }
+            
+            generateQuizOptions() {
+                if (!this.isQuizMode) return;
+                
+                const currentCard = this.shuffledDataset[this.currentCardIndex];
+                const correctAnswer = currentCard.letter;
+                this.currentQuizAnswer = correctAnswer;
+                
+                // Generate wrong answers
+                const allAnswers = this.currentDataset.map(card => card.letter);
+                const wrongAnswers = allAnswers.filter(answer => answer !== correctAnswer);
+                const shuffledWrong = wrongAnswers.sort(() => Math.random() - 0.5).slice(0, 3);
+                
+                // Combine and shuffle all options
+                const options = [correctAnswer, ...shuffledWrong].sort(() => Math.random() - 0.5);
+                
+                const optionsContainer = document.getElementById('quizOptions');
+                optionsContainer.innerHTML = '';
+                
+                options.forEach(option => {
+                    const optionButton = document.createElement('div');
+                    optionButton.className = 'quiz-option';
+                    optionButton.textContent = option;
+                    optionButton.addEventListener('click', () => this.handleQuizAnswer(option, optionButton));
+                    optionsContainer.appendChild(optionButton);
+                });
+                
+                document.getElementById('quizFeedback').classList.add('hidden');
+            }
+            
+            handleQuizAnswer(selectedAnswer, buttonElement) {
+                if (this.quizAnswered) return;
+                
+                this.quizAnswered = true;
+                const isCorrect = selectedAnswer === this.currentQuizAnswer;
+                
+                // Update button states
+                const allOptions = document.querySelectorAll('.quiz-option');
+                allOptions.forEach(option => {
+                    option.style.pointerEvents = 'none';
+                    if (option.textContent === this.currentQuizAnswer) {
+                        option.classList.add('correct');
+                    } else if (option === buttonElement && !isCorrect) {
+                        option.classList.add('incorrect');
+                    }
+                });
+                
+                // Show feedback
+                const feedbackDiv = document.getElementById('quizFeedback');
+                feedbackDiv.classList.remove('hidden', 'correct', 'incorrect');
+                
+                if (isCorrect) {
+                    feedbackDiv.classList.add('correct');
+                    feedbackDiv.textContent = '🎉 Excellent! Correct answer!';
+                    this.correctAnswers++;
+                    this.streakCount++;
+                } else {
+                    feedbackDiv.classList.add('incorrect');
+                    feedbackDiv.textContent = `❌ Not quite. The correct answer is "${this.currentQuizAnswer}"`;
+                    this.streakCount = 0;
+                }
+                
+                this.updateStats();
+                
+                // Auto-advance after quiz answer
+                setTimeout(() => {
+                    this.nextCard();
+                    allOptions.forEach(option => {
+                        option.style.pointerEvents = 'auto';
+                        option.classList.remove('correct', 'incorrect');
+                    });
+                }, 2500);
+            }
+        }
+        
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ASLFlashcards();
+        });
+        
+        // Add some performance optimizations
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Pause any running timers when tab is not visible
+                const app = window.aslApp;
+                if (app && app.autoFlipTimer) {
+                    clearInterval(app.autoFlipTimer);
+                }
+            } else {
+                // Resume timers when tab becomes visible
+                const app = window.aslApp;
+                if (app) {
+                    app.setupAutoFlip();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
