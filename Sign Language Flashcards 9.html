@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Flashcards Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger-gradient: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-heavy: 0 15px 35px rgba(31, 38, 135, 0.2);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--primary-gradient);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" fill-opacity="0.05"/><circle cx="75" cy="75" r="1" fill="white" fill-opacity="0.05"/><circle cx="50" cy="10" r="0.5" fill="white" fill-opacity="0.03"/><circle cx="20" cy="80" r="0.5" fill="white" fill-opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .header:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            letter-spacing: -0.5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem 1rem;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2px;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-heavy);
+            padding: 2.5rem;
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        .app-container::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            min-width: 120px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-gradient);
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-warning {
+            background: var(--warning-gradient);
+            color: #333;
+            text-shadow: none;
+            box-shadow: 0 4px 15px rgba(255, 183, 77, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger-gradient);
+            box-shadow: 0 4px 15px rgba(252, 70, 107, 0.4);
+        }
+
+        .flashcard-container {
+            perspective: 1200px;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 450px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+
+        .flashcard:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard.flipped:hover {
+            transform: rotateY(185deg) rotateX(5deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            overflow: hidden;
+        }
+
+        .flashcard-front::before,
+        .flashcard-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(20px);
+            z-index: -1;
+        }
+
+        .flashcard-front {
+            background: var(--primary-gradient);
+            color: white;
+            position: relative;
+        }
+
+        .flashcard-back {
+            background: var(--secondary-gradient);
+            color: white;
+            transform: rotateY(180deg);
+            position: relative;
+        }
+
+        .hand-sign {
+            font-size: 10rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .letter-display {
+            font-size: 5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            letter-spacing: -2px;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .word-display {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .progress-container {
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            overflow: hidden;
+            margin-bottom: 0.8rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-gradient);
+            border-radius: 25px;
+            transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: progress-shine 1.5s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-btn {
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .category-btn:hover::before,
+        .category-btn.active::before {
+            left: 100%;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .voice-controls {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .voice-controls::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            animation: voice-pulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes voice-pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 0.8; }
+        }
+
+        .voice-controls h3 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .voice-controls p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .voice-btn {
+            background: var(--danger-gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 0 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(252, 70, 107, 0.4);
+        }
+
+        .voice-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: var(--transition);
+        }
+
+        .voice-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 12px 35px rgba(252, 70, 107, 0.6);
+        }
+
+        .voice-btn.recording {
+            background: var(--danger-gradient);
+            animation: recording-pulse 1s infinite;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+        }
+
+        @keyframes recording-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
+            50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(255, 0, 0, 1); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
+        }
+
+        .recognition-result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-left: 4px solid #667eea;
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1.1rem;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-system {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feedback-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 140px;
+        }
+
+        .feedback-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: var(--transition);
+        }
+
+        .feedback-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .feedback-correct {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .feedback-correct:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.6);
+        }
+
+        .feedback-incorrect {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .feedback-incorrect:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        .voice-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 1rem;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .recognition-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feedback-system {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feedback-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-correct {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .feedback-incorrect {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .difficulty-btn {
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.4rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .difficulty-btn:hover::before,
+        .difficulty-btn.active::before {
+            left: 100%;
+        }
+
+        .difficulty-btn.active {
+            background: var(--warning-gradient);
+            border-color: rgba(255, 183, 77, 0.5);
+            color: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 183, 77, 0.4);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .achievement-notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--success-gradient);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            transform: translateX(400px);
+            transition: var(--transition);
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 300px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .achievement-notification.show {
+            transform: translateX(0);
+            animation: achievement-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes achievement-bounce {
+            0% { transform: translateX(400px) scale(0.3); }
+            50% { transform: translateX(-20px) scale(1.05); }
+            70% { transform: translateX(10px) scale(0.95); }
+            100% { transform: translateX(0) scale(1); }
+        }
+
+        .achievement-notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            border-radius: inherit;
+            filter: blur(20px);
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        .timer {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .tooltip:hover::before,
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        .card-flip-indicator {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .high-contrast .flashcard-front {
+            background: #000 !important;
+            color: #fff !important;
+            border: 3px solid #fff !important;
+        }
+
+        .high-contrast .flashcard-back {
+            background: #fff !important;
+            color: #000 !important;
+            border: 3px solid #000 !important;
+        }
+
+        .high-contrast .btn {
+            border: 2px solid currentColor !important;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 1.6rem;
+            }
+
+            .stats {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .stat-item {
+                padding: 0.5rem 0.8rem;
+                min-width: 80px;
+            }
+
+            .app-container {
+                margin: 1rem;
+                padding: 1.5rem;
+                border-radius: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.8rem;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .hand-sign {
+                font-size: 7rem;
+            }
+
+            .letter-display {
+                font-size: 3.5rem;
+            }
+
+            .word-display {
+                font-size: 1.8rem;
+            }
+
+            .flashcard {
+                height: 350px;
+            }
+
+            .category-btn,
+            .difficulty-btn {
+                margin: 0.2rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .voice-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+
+            .feedback-system {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .feedback-btn {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+
+            .achievement-notification {
+                top: 20px;
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100px);
+                min-width: auto;
+                text-align: center;
+            }
+
+            .achievement-notification.show {
+                transform: translateY(0);
+            }
+
+            .timer {
+                font-size: 1.2rem;
+                padding: 0.8rem;
+            }
+
+            .voice-controls {
+                padding: 1.5rem;
+            }
+
+            .voice-controls h3 {
+                font-size: 1.3rem;
+            }
+
+            .voice-controls p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
+            .hand-sign {
+                font-size: 5rem;
+            }
+
+            .letter-display {
+                font-size: 2.5rem;
+            }
+
+            .word-display {
+                font-size: 1.4rem;
+            }
+
+            .flashcard {
+                height: 280px;
+            }
+
+            .stats {
+                font-size: 0.8rem;
+            }
+
+            .stat-value {
+                font-size: 1.1rem;
+            }
+
+            .category-btn,
+            .difficulty-btn {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .flashcard {
+                transition: none;
+            }
+
+            .hand-sign {
+                animation: none;
+            }
+
+            .btn::before,
+            .category-btn::before,
+            .difficulty-btn::before,
+            .feedback-btn::before {
+                display: none;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --glass-bg: rgba(0, 0, 0, 0.2);
+                --glass-border: rgba(255, 255, 255, 0.1);
+            }
+
+            .app-container {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .header {
+                background: rgba(0, 0, 0, 0.4);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+
+            .header,
+            .controls,
+            .voice-controls,
+            .feedback-system {
+                display: none !important;
+            }
+
+            .flashcard-container {
+                page-break-inside: avoid;
+            }
+
+            .flashcard {
+                position: static !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border: 2px solid black !important;
+            }
+
+            .flashcard-front,
+            .flashcard-back {
+                background: white !important;
+                color: black !important;
+                position: static !important;
+                transform: none !important;
+                display: flex !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🤟 ASL Flashcards Pro</div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCards">26</div>
+                <div>Total Cards</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="correctAnswers">0</div>
+                <div>Correct</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">0%</div>
+                <div>Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="streak">0</div>
+                <div>Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="app-container">
+            <div class="category-selector">
+                <button class="category-btn active" data-category="alphabet">Alphabet</button>
+                <button class="category-btn" data-category="numbers">Numbers</button>
+                <button class="category-btn" data-category="common">Common Words</button>
+            </div>
+
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+            </div>
+
+            <div class="timer" id="timer">Ready to start!</div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Card 1 of 26</div>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-front">
+                        <div class="hand-sign" id="handSign">✋</div>
+                        <div class="word-display" id="frontText">Click to see letter</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="letter-display" id="letterDisplay">A</div>
+                        <div class="word-display" id="backText">Letter A</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="flipBtn">Flip Card</button>
+                <button class="btn btn-secondary" id="nextBtn">Next Card</button>
+                <button class="btn btn-secondary" id="prevBtn">Previous Card</button>
+                <button class="btn btn-success" id="shuffleBtn">Shuffle</button>
+                <button class="btn btn-primary" id="autoPlayBtn">Auto Play</button>
+            </div>
+
+            <div class="feedback-system">
+                <button class="feedback-btn feedback-correct" id="correctBtn">✓ Correct</button>
+                <button class="feedback-btn feedback-incorrect" id="incorrectBtn">✗ Incorrect</button>
+            </div>
+
+            <div class="voice-controls">
+                <h3>Voice Recognition Test</h3>
+                <p>Say the letter or word you see!</p>
+                <button class="voice-btn" id="voiceBtn">🎤</button>
+                <button class="btn btn-secondary" id="speechBtn">🔊 Speak</button>
+                <div class="recognition-result" id="recognitionResult" style="display: none;">
+                    <strong>You said:</strong> <span id="recognizedText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-notification" id="achievementNotification">
+        🎉 Achievement Unlocked!
+    </div>
+
+    <script>
+        class ASLFlashcards {
+            constructor() {
+                this.currentCategory = 'alphabet';
+                this.currentDifficulty = 'easy';
+                this.currentIndex = 0;
+                this.isFlipped = false;
+                this.isAutoPlay = false;
+                this.autoPlayInterval = null;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.startTime = null;
+                this.timerInterval = null;
+                
+                this.recognition = null;
+                this.synth = window.speechSynthesis;
+                
+                this.initSpeechRecognition();
+                this.initCards();
+                this.bindEvents();
+                this.updateDisplay();
+                this.loadProgress();
+            }
+
+            initCards() {
+                this.cards = {
+                    alphabet: [
+                        { sign: '✊', letter: 'A', word: 'Letter A', difficulty: 'easy' },
+                        { sign: '🤟', letter: 'B', word: 'Letter B', difficulty: 'easy' },
+                        { sign: '👌', letter: 'C', word: 'Letter C', difficulty: 'easy' },
+                        { sign: '👆', letter: 'D', word: 'Letter D', difficulty: 'easy' },
+                        { sign: '✋', letter: 'E', word: 'Letter E', difficulty: 'easy' },
+                        { sign: '👌', letter: 'F', word: 'Letter F', difficulty: 'medium' },
+                        { sign: '👆', letter: 'G', word: 'Letter G', difficulty: 'medium' },
+                        { sign: '✌️', letter: 'H', word: 'Letter H', difficulty: 'medium' },
+                        { sign: '🤏', letter: 'I', word: 'Letter I', difficulty: 'easy' },
+                        { sign: '🤙', letter: 'J', word: 'Letter J', difficulty: 'hard' },
+                        { sign: '✌️', letter: 'K', word: 'Letter K', difficulty: 'medium' },
+                        { sign: '👆', letter: 'L', word: 'Letter L', difficulty: 'easy' },
+                        { sign: '✊', letter: 'M', word: 'Letter M', difficulty: 'medium' },
+                        { sign: '✊', letter: 'N', word: 'Letter N', difficulty: 'medium' },
+                        { sign: '👌', letter: 'O', word: 'Letter O', difficulty: 'easy' },
+                        { sign: '👆', letter: 'P', word: 'Letter P', difficulty: 'hard' },
+                        { sign: '👆', letter: 'Q', word: 'Letter Q', difficulty: 'hard' },
+                        { sign: '✌️', letter: 'R', word: 'Letter R', difficulty: 'medium' },
+                        { sign: '✊', letter: 'S', word: 'Letter S', difficulty: 'easy' },
+                        { sign: '👊', letter: 'T', word: 'Letter T', difficulty: 'easy' },
+                        { sign: '✌️', letter: 'U', word: 'Letter U', difficulty: 'medium' },
+                        { sign: '✌️', letter: 'V', word: 'Letter V', difficulty: 'easy' },
+                        { sign: '🤟', letter: 'W', word: 'Letter W', difficulty: 'medium' },
+                        { sign: '👆', letter: 'X', word: 'Letter X', difficulty: 'hard' },
+                        { sign: '🤙', letter: 'Y', word: 'Letter Y', difficulty: 'medium' },
+                        { sign: '👆', letter: 'Z', word: 'Letter Z', difficulty: 'hard' }
+                    ],
+                    numbers: [
+                        { sign: '👆', letter: '1', word: 'One', difficulty: 'easy' },
+                        { sign: '✌️', letter: '2', word: 'Two', difficulty: 'easy' },
+                        { sign: '🤟', letter: '3', word: 'Three', difficulty: 'easy' },
+                        { sign: '🖖', letter: '4', word: 'Four', difficulty: 'medium' },
+                        { sign: '✋', letter: '5', word: 'Five', difficulty: 'easy' },
+                        { sign: '🤙', letter: '6', word: 'Six', difficulty: 'medium' },
+                        { sign: '🤘', letter: '7', word: 'Seven', difficulty: 'medium' },
+                        { sign: '🤞', letter: '8', word: 'Eight', difficulty: 'hard' },
+                        { sign: '👌', letter: '9', word: 'Nine', difficulty: 'medium' },
+                        { sign: '👊', letter: '0', word: 'Zero', difficulty: 'easy' }
+                    ],
+                    common: [
+                        { sign: '👋', letter: 'HELLO', word: 'Hello', difficulty: 'easy' },
+                        { sign: '🙏', letter: 'THANK YOU', word: 'Thank You', difficulty: 'medium' },
+                        { sign: '👍', letter: 'GOOD', word: 'Good', difficulty: 'easy' },
+                        { sign: '❤️', letter: 'LOVE', word: 'Love', difficulty: 'medium' },
+                        { sign: '🏠', letter: 'HOME', word: 'Home', difficulty: 'medium' },
+                        { sign: '🍎', letter: 'EAT', word: 'Eat', difficulty: 'medium' },
+                        { sign: '💧', letter: 'WATER', word: 'Water', difficulty: 'hard' },
+                        { sign: '😊', letter: 'HAPPY', word: 'Happy', difficulty: 'easy' },
+                        { sign: '👋', letter: 'GOODBYE', word: 'Goodbye', difficulty: 'easy' },
+                        { sign: '❓', letter: 'QUESTION', word: 'Question', difficulty: 'hard' }
+                    ]
+                };
+            }
+
+            initSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.lang = 'en-US';
+                    this.recognition.interimResults = false;
+                    this.recognition.maxAlternatives = 1;
+
+                    this.recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript.toUpperCase();
+                        this.handleVoiceResult(result);
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.showVoiceResult('Error: Could not recognize speech');
+                    };
+                }
+            }
+
+            bindEvents() {
+                // Card controls
+                document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextCard());
+                document.getElementById('prevBtn').addEventListener('click', () => this.prevCard());
+                document.getElementById('shuffleBtn').addEventListener('click', () => this.shuffleCards());
+                document.getElementById('autoPlayBtn').addEventListener('click', () => this.toggleAutoPlay());
+                
+                // Flashcard click
+                document.getElementById('flashcard').addEventListener('click', () => this.flipCard());
+                
+                // Feedback
+                document.getElementById('correctBtn').addEventListener('click', () => this.markCorrect());
+                document.getElementById('incorrectBtn').addEventListener('click', () => this.markIncorrect());
+                
+                // Category selection
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchCategory(e.target.dataset.category));
+                });
+                
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchDifficulty(e.target.dataset.difficulty));
+                });
+                
+                // Voice controls
+                document.getElementById('voiceBtn').addEventListener('click', () => this.startVoiceRecognition());
+                document.getElementById('speechBtn').addEventListener('click', () => this.speakCurrentCard());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            getCurrentCards() {
+                const allCards = this.cards[this.currentCategory];
+                if (this.currentDifficulty === 'easy') {
+                    return allCards.filter(card => card.difficulty === 'easy');
+                } else if (this.currentDifficulty === 'medium') {
+                    return allCards.filter(card => card.difficulty === 'easy' || card.difficulty === 'medium');
+                } else {
+                    return allCards;
+                }
+            }
+
+            updateDisplay() {
+                const cards = this.getCurrentCards();
+                const card = cards[this.currentIndex];
+                
+                if (!card) return;
+                
+                document.getElementById('handSign').textContent = card.sign;
+                document.getElementById('letterDisplay').textContent = card.letter;
+                document.getElementById('frontText').textContent = this.currentCategory === 'alphabet' ? 'Click to see letter' : 'Click to see word';
+                document.getElementById('backText').textContent = card.word;
+                
+                // Update progress
+                document.getElementById('progressFill').style.width = `${((this.currentIndex + 1) / cards.length) * 100}%`;
+                document.getElementById('progressText').textContent = `Card ${this.currentIndex + 1} of ${cards.length}`;
+                document.getElementById('totalCards').textContent = cards.length;
+                
+                // Reset flip state
+                document.getElementById('flashcard').classList.remove('flipped');
+                this.isFlipped = false;
+                
+                this.updateStats();
+                this.startTimer();
+            }
+
+            updateStats() {
+                const accuracy = this.totalAttempts > 0 ? Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                document.getElementById('correctAnswers').textContent = this.correctAnswers;
+                document.getElementById('accuracy').textContent = `${accuracy}%`;
+                document.getElementById('streak').textContent = this.streak;
+            }
+
+            flipCard() {
+                const flashcard = document.getElementById('flashcard');
+                flashcard.classList.toggle('flipped');
+                this.isFlipped = !this.isFlipped;
+            }
+
+            nextCard() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = (this.currentIndex + 1) % cards.length;
+                this.updateDisplay();
+            }
+
+            prevCard() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = this.currentIndex === 0 ? cards.length - 1 : this.currentIndex - 1;
+                this.updateDisplay();
+            }
+
+            shuffleCards() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = Math.floor(Math.random() * cards.length);
+                this.updateDisplay();
+                this.showAchievement('Cards shuffled! 🔀');
+            }
+
+            toggleAutoPlay() {
+                const btn = document.getElementById('autoPlayBtn');
+                if (this.isAutoPlay) {
+                    clearInterval(this.autoPlayInterval);
+                    this.isAutoPlay = false;
+                    btn.textContent = 'Auto Play';
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-primary');
+                } else {
+                    this.isAutoPlay = true;
+                    btn.textContent = 'Stop Auto';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    this.autoPlayInterval = setInterval(() => {
+                        if (this.isFlipped) {
+                            this.nextCard();
+                        } else {
+                            this.flipCard();
+                        }
+                    }, 3000);
+                }
+            }
+
+            switchCategory(category) {
+                this.currentCategory = category;
+                this.currentIndex = 0;
+                
+                // Update active button
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+                
+                this.updateDisplay();
+            }
+
+            switchDifficulty(difficulty) {
+                this.currentDifficulty = difficulty;
+                this.currentIndex = 0;
+                
+                // Update active button
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+                
+                this.updateDisplay();
+            }
+
+            markCorrect() {
+                this.correctAnswers++;
+                this.totalAttempts++;
+                this.streak++;
+                
+                if (this.streak > this.bestStreak) {
+                    this.bestStreak = this.streak;
+                    this.showAchievement(`New best streak: ${this.streak}! 🔥`);
+                }
+                
+                if (this.streak % 5 === 0) {
+                    this.showAchievement(`${this.streak} in a row! You're on fire! 🚀`);
+                }
+                
+                this.updateStats();
+                this.saveProgress();
+                
+                setTimeout(() => this.nextCard(), 1000);
+            }
+
+            markIncorrect() {
+                this.totalAttempts++;
+                this.streak = 0;
+                this.updateStats();
+                this.saveProgress();
+            }
+
+            startVoiceRecognition() {
+                if (!this.recognition) {
+                    alert('Speech recognition is not supported in your browser.');
+                    return;
+                }
+                
+                const btn = document.getElementById('voiceBtn');
+                btn.classList.add('recording');
+                btn.textContent = '🔴';
+                
+                this.recognition.start();
+                
+                setTimeout(() => {
+                    btn.classList.remove('recording');
+                    btn.textContent = '🎤';
+                }, 5000);
+            }
+
+            handleVoiceResult(result) {
+                const cards = this.getCurrentCards();
+                const currentCard = cards[this.currentIndex];
+                const expected = currentCard.letter.toUpperCase();
+                
+                this.showVoiceResult(result);
+                
+                if (result.includes(expected) || expected.includes(result)) {
+                    this.showAchievement('Correct! Great pronunciation! 🎯');
+                    this.markCorrect();
+                } else {
+                    this.showVoiceResult(`You said: "${result}" - Expected: "${expected}"`);
+                }
+            }
+
+            showVoiceResult(text) {
+                const resultDiv = document.getElementById('recognitionResult');
+                const textSpan = document.getElementById('recognizedText');
+                textSpan.textContent = text;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            speakCurrentCard() {
+                const cards = this.getCurrentCards();
+                const currentCard = cards[this.currentIndex];
+                
+                const utterance = new SpeechSynthesisUtterance(currentCard.word);
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                this.synth.speak(utterance);
+            }
+
+            handleKeyboard(e) {
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        this.flipCard();
+                        break;
+                    case 'c':
+                        this.markCorrect();
+                        break;
+                    case 'x':
+                        this.markIncorrect();
+                        break;
+                }
+            }
+
+            startTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+                
+                this.startTime = Date.now();
+                this.timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('timer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            showAchievement(message) {
+                const notification = document.getElementById('achievementNotification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            saveProgress() {
+                const progress = {
+                    correctAnswers: this.correctAnswers,
+                    totalAttempts: this.totalAttempts,
+                    bestStreak: this.bestStreak,
+                    currentCategory: this.currentCategory,
+                    currentDifficulty: this.currentDifficulty
+                };
+                
+                // Store in memory (localStorage not available in Claude.ai)
+                this.savedProgress = progress;
+            }
+
+            loadProgress() {
+                // In a real application, this would load from localStorage
+                // For now, we'll just initialize with defaults
+                if (this.savedProgress) {
+                    this.correctAnswers = this.savedProgress.correctAnswers || 0;
+                    this.totalAttempts = this.savedProgress.totalAttempts || 0;
+                    this.bestStreak = this.savedProgress.bestStreak || 0;
+                    this.currentCategory = this.savedProgress.currentCategory || 'alphabet';
+                    this.currentDifficulty = this.savedProgress.currentDifficulty || 'easy';
+                }
+            }
+
+            // Advanced features for impressive functionality
+            generateCustomQuiz() {
+                const cards = this.getCurrentCards();
+                const quizCards = [];
+                
+                // Select random cards based on difficulty
+                const numCards = Math.min(10, cards.length);
+                const selectedIndices = new Set();
+                
+                while (selectedIndices.size < numCards) {
+                    selectedIndices.add(Math.floor(Math.random() * cards.length));
+                }
+                
+                selectedIndices.forEach(index => {
+                    quizCards.push(cards[index]);
+                });
+                
+                return quizCards;
+            }
+
+            exportProgress() {
+                const progress = {
+                    date: new Date().toISOString(),
+                    correctAnswers: this.correctAnswers,
+                    totalAttempts: this.totalAttempts,
+                    accuracy: this.totalAttempts > 0 ? Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0,
+                    bestStreak: this.bestStreak,
+                    currentStreak: this.streak,
+                    category: this.currentCategory,
+                    difficulty: this.currentDifficulty
+                };
+                
+                const dataStr = JSON.stringify(progress, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'asl-flashcards-progress.json';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                this.showAchievement('Progress exported! 📊');
+            }
+
+            resetProgress() {
+                if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                    this.correctAnswers = 0;
+                    this.totalAttempts = 0;
+                    this.streak = 0;
+                    this.bestStreak = 0;
+                    this.currentIndex = 0;
+                    this.updateStats();
+                    this.updateDisplay();
+                    this.showAchievement('Progress reset! Start fresh! 🔄');
+                }
+            }
+
+            // Gamification features
+            calculateLevel() {
+                return Math.floor(this.correctAnswers / 10) + 1;
+            }
+
+            getNextLevelProgress() {
+                const currentLevel = this.calculateLevel();
+                const pointsForCurrentLevel = (currentLevel - 1) * 10;
+                const pointsForNextLevel = currentLevel * 10;
+                const currentProgress = this.correctAnswers - pointsForCurrentLevel;
+                const totalNeeded = pointsForNextLevel - pointsForCurrentLevel;
+                
+                return {
+                    level: currentLevel,
+                    progress: currentProgress,
+                    total: totalNeeded,
+                    percentage: (currentProgress / totalNeeded) * 100
+                };
+            }
+
+            // Performance analytics
+            getPerformanceInsights() {
+                if (this.totalAttempts === 0) return null;
+                
+                const accuracy = (this.correctAnswers / this.totalAttempts) * 100;
+                let insight = "";
+                
+                if (accuracy >= 90) {
+                    insight = "Excellent! You're mastering ASL! 🌟";
+                } else if (accuracy >= 75) {
+                    insight = "Great progress! Keep practicing! 📈";
+                } else if (accuracy >= 60) {
+                    insight = "Good effort! Focus on challenging signs. 💪";
+                } else {
+                    insight = "Keep practicing! Every expert was once a beginner. 🌱";
+                }
+                
+                return {
+                    accuracy: accuracy.toFixed(1),
+                    insight: insight,
+                    recommendations: this.getRecommendations()
+                };
+            }
+
+            getRecommendations() {
+                const recommendations = [];
+                
+                if (this.streak < 3) {
+                    recommendations.push("Try to build a streak by focusing on easier signs first");
+                }
+                
+                if (this.totalAttempts < 20) {
+                    recommendations.push("Practice more cards to improve your skills");
+                }
+                
+                const accuracy = this.totalAttempts > 0 ? (this.correctAnswers / this.totalAttempts) * 100 : 0;
+                if (accuracy < 70) {
+                    recommendations.push("Consider using the voice recognition feature for better learning");
+                    recommendations.push("Use the speech synthesis to hear correct pronunciations");
+                }
+                
+                return recommendations;
+            }
+
+            // Study mode features
+            enterStudyMode() {
+                this.studyMode = true;
+                this.studyStartTime = Date.now();
+                this.studyCorrect = 0;
+                this.studyTotal = 0;
+                
+                this.showAchievement('Study mode activated! Focus time! 📚');
+                
+                // Auto-flip after 3 seconds in study mode
+                this.studyInterval = setInterval(() => {
+                    if (!this.isFlipped) {
+                        this.flipCard();
+                    }
+                }, 3000);
+            }
+
+            exitStudyMode() {
+                if (this.studyMode) {
+                    clearInterval(this.studyInterval);
+                    this.studyMode = false;
+                    
+                    const studyTime = Math.floor((Date.now() - this.studyStartTime) / 1000);
+                    const studyAccuracy = this.studyTotal > 0 ? Math.round((this.studyCorrect / this.studyTotal) * 100) : 0;
+                    
+                    this.showAchievement(`Study session complete! ${studyTime}s, ${studyAccuracy}% accuracy 🎓`);
+                }
+            }
+
+            // Accessibility features
+            enableHighContrast() {
+                document.body.classList.add('high-contrast');
+            }
+
+            disableHighContrast() {
+                document.body.classList.remove('high-contrast');
+            }
+
+            increaseFontSize() {
+                const root = document.documentElement;
+                const currentSize = parseFloat(getComputedStyle(root).fontSize);
+                root.style.fontSize = (currentSize * 1.1) + 'px';
+            }
+
+            decreaseFontSize() {
+                const root = document.documentElement;
+                const currentSize = parseFloat(getComputedStyle(root).fontSize);
+                root.style.fontSize = (currentSize * 0.9) + 'px';
+            }
+        }
+
+        // Initialize the application
+        const app = new ASLFlashcards();
+        
+        // Add extra control buttons dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const controlsDiv = document.querySelector('.controls');
+            
+            // Add advanced buttons
+            const studyBtn = document.createElement('button');
+            studyBtn.className = 'btn btn-success';
+            studyBtn.textContent = 'Study Mode';
+            studyBtn.onclick = () => app.enterStudyMode();
+            controlsDiv.appendChild(studyBtn);
+            
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn btn-primary';
+            exportBtn.textContent = 'Export Progress';
+            exportBtn.onclick = () => app.exportProgress();
+            controlsDiv.appendChild(exportBtn);
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'btn btn-secondary';
+            resetBtn.textContent = 'Reset Progress';
+            resetBtn.onclick = () => app.resetProgress();
+            controlsDiv.appendChild(resetBtn);
+            
+            // Add keyboard shortcuts info
+            const shortcutsInfo = document.createElement('div');
+            shortcutsInfo.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: rgba(255, 255, 255, 0.9);
+                padding: 10px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            `;
+            shortcutsInfo.innerHTML = `
+                <strong>Keyboard Shortcuts:</strong><br>
+                Space: Flip card<br>
+                ← →: Navigate<br>
+                C: Mark correct<br>
+                X: Mark incorrect<br>
+                Ctrl+S: Shuffle
+            `;
+            document.body.appendChild(shortcutsInfo);
+            
+            // Add performance insights panel
+            const insightsPanel = document.createElement('div');
+            insightsPanel.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 15px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                max-width: 250px;
+                z-index: 1000;
+            `;
+            insightsPanel.innerHTML = `
+                <h4 style="margin-bottom: 10px;">Performance Insights</h4>
+                <div id="insights-content">Start practicing to see insights!</div>
+            `;
+            document.body.appendChild(insightsPanel);
+            
+            // Update insights periodically
+            setInterval(() => {
+                const insights = app.getPerformanceInsights();
+                if (insights) {
+                    const level = app.calculateLevel();
+                    const levelProgress = app.getNextLevelProgress();
+                    
+                    document.getElementById('insights-content').innerHTML = `
+                        <div><strong>Level:</strong> ${level}</div>
+                        <div><strong>Accuracy:</strong> ${insights.accuracy}%</div>
+                        <div style="margin: 10px 0;">
+                            <div style="background: #eee; height: 4px; border-radius: 2px;">
+                                <div style="background: #667eea; height: 100%; width: ${levelProgress.percentage}%; border-radius: 2px;"></div>
+                            </div>
+                            <small>${levelProgress.progress}/${levelProgress.total} to next level</small>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">${insights.insight}</div>
+                    `;
+                }
+            }, 2000);
+        });
+        
+        // Add CSS for high contrast mode
+        const style = document.createElement('style');
+        style.textContent = `
+            .high-contrast {
+                filter: contrast(150%) brightness(110%);
+            }
+            
+            .high-contrast .flashcard-front {
+                background: #000 !important;
+                color: #fff !important;
+            }
+            
+            .high-contrast .flashcard-back {
+                background: #fff !important;
+                color: #000 !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add service worker for offline functionality (commented out for Claude.ai compatibility)
+        /*
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+        */
+        
+        console.log('🤟 ASL Flashcards Pro - Loaded successfully!');
+        console.log('Features: Voice recognition, Speech synthesis, Progress tracking, Gamification, Accessibility');
+    </script>
+</body>
+</html>
