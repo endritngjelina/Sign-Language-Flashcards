@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Learning Hub - Professional Flashcards Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #4CAF50, #45a049);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            --success-gradient: linear-gradient(135deg, #4CAF50, #45a049);
+            --achievement-gradient: linear-gradient(135deg, #FFD700, #FFA500);
+            --card-front-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 255, 0.95) 100%);
+            --card-back-bg: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --stat-card-bg: rgba(255, 255, 255, 0.98);
+            --header-bg: rgba(255, 255, 255, 0.15);
+            --btn-hover-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--header-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.1),
+                0 3px 10px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--stat-card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            flex: 1;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                0 1px 8px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--btn-hover-shadow);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-danger {
+            background: var(--danger-gradient);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .flashcard {
+            width: 420px;
+            height: 520px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.2));
+        }
+
+        .flashcard:hover {
+            transform: translateY(-5px) rotateX(5deg);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard.flipped:hover {
+            transform: rotateY(180deg) translateY(-5px) rotateX(-5deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.15),
+                0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .card-face:hover::before {
+            opacity: 1;
+        }
+
+        .card-front {
+            background: var(--card-front-bg);
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-back {
+            background: var(--card-back-bg);
+            color: white;
+            transform: rotateY(180deg);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .sign-display {
+            font-size: 9rem;
+            margin-bottom: 25px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: gentle-float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3));
+        }
+
+        @keyframes gentle-float {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3));
+            }
+            50% { 
+                transform: translateY(-10px) scale(1.05);
+                filter: drop-shadow(0 5px 25px rgba(102, 126, 234, 0.4));
+            }
+        }
+
+        .sign-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card-back .sign-text {
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sign-description {
+            font-size: 1.15rem;
+            opacity: 0.85;
+            line-height: 1.6;
+            font-weight: 400;
+            max-width: 300px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 10px;
+            margin: 25px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049, #66bb6a);
+            border-radius: 10px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 
+                0 0 10px rgba(76, 175, 80, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .voice-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: var(--danger-gradient);
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            box-shadow: 
+                0 8px 25px rgba(255, 107, 107, 0.4),
+                0 3px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .voice-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 12px 35px rgba(255, 107, 107, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .voice-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .voice-btn.recording {
+            animation: recording-pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            box-shadow: 
+                0 0 0 0 rgba(255, 71, 87, 0.7),
+                0 8px 25px rgba(255, 71, 87, 0.4);
+        }
+
+        @keyframes recording-pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7), 0 8px 25px rgba(255, 71, 87, 0.4);
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 0 0 15px rgba(255, 71, 87, 0), 0 12px 35px rgba(255, 71, 87, 0.6);
+            }
+        }
+
+        .feedback {
+            padding: 18px 24px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .feedback.correct {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(69, 160, 73, 0.9));
+            color: white;
+            box-shadow: 0 15px 35px rgba(76, 175, 80, 0.3);
+        }
+
+        .feedback.incorrect {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(211, 47, 47, 0.9));
+            color: white;
+            box-shadow: 0 15px 35px rgba(244, 67, 54, 0.3);
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .mode-btn {
+            padding: 12px 24px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .mode-btn:hover::before {
+            left: 100%;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .mode-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .difficulty-selector {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .difficulty-btn {
+            margin: 0 8px;
+            padding: 10px 20px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .difficulty-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .achievements {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .achievement {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .achievement::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .achievement.unlocked {
+            background: var(--achievement-gradient);
+            color: white;
+            animation: achievement-glow 3s infinite;
+            transform: scale(1.1);
+            box-shadow: 
+                0 10px 30px rgba(255, 215, 0, 0.4),
+                0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .achievement.unlocked::before {
+            opacity: 1;
+        }
+
+        .achievement.unlocked:hover {
+            transform: scale(1.2);
+            animation: achievement-celebrate 0.6s ease;
+        }
+
+        .achievement.locked {
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+            color: #888;
+            opacity: 0.6;
+        }
+
+        .achievement.locked:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        @keyframes achievement-glow {
+            0%, 100% { 
+                box-shadow: 
+                    0 10px 30px rgba(255, 215, 0, 0.4),
+                    0 0 20px rgba(255, 215, 0, 0.6);
+            }
+            50% { 
+                box-shadow: 
+                    0 15px 40px rgba(255, 215, 0, 0.6),
+                    0 0 30px rgba(255, 215, 0, 0.9);
+            }
+        }
+
+        @keyframes achievement-celebrate {
+            0%, 100% { transform: scale(1.1) rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-5deg); }
+            75% { transform: scale(1.3) rotate(5deg); }
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: inline-block;
+        }
+
+        .streak-indicator {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .streak-flame {
+            font-size: 2.2rem;
+            animation: flame-dance 2s ease-in-out infinite;
+            display: inline-block;
+            margin-right: 10px;
+            filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.7));
+        }
+
+        @keyframes flame-dance {
+            0%, 100% { 
+                transform: rotate(-3deg) scale(1);
+                filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.7));
+            }
+            25% { 
+                transform: rotate(2deg) scale(1.1);
+                filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.8));
+            }
+            50% { 
+                transform: rotate(-1deg) scale(1.05);
+                filter: drop-shadow(0 0 20px rgba(255, 120, 0, 0.9));
+            }
+            75% { 
+                transform: rotate(1deg) scale(1.08);
+                filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.8));
+            }
+        }
+
+        .advanced-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .keyboard-shortcuts {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .keyboard-shortcuts strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Floating elements animation */
+        .container::before {
+            content: '✨';
+            position: fixed;
+            top: 10%;
+            right: 10%;
+            font-size: 2rem;
+            animation: float-right 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container::after {
+            content: '🌟';
+            position: fixed;
+            bottom: 20%;
+            left: 5%;
+            font-size: 1.5rem;
+            animation: float-left 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes float-right {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+        
+        @keyframes float-left {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(-180deg); opacity: 0.9; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .flashcard {
+                width: 320px;
+                height: 420px;
+            }
+            
+            .sign-display {
+                font-size: 7rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                margin: 0;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 80%;
+                max-width: 250px;
+            }
+            
+            .mode-selector {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .mode-btn {
+                width: 90%;
+                max-width: 200px;
+            }
+            
+            .achievements {
+                gap: 10px;
+            }
+            
+            .achievement {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .voice-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flashcard {
+                width: 280px;
+                height: 380px;
+            }
+            
+            .sign-display {
+                font-size: 6rem;
+            }
+            
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-face {
+                padding: 25px;
+            }
+            
+            .sign-text {
+                font-size: 1.8rem;
+            }
+            
+            .sign-description {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-hands"></i> ASL Learning Hub</h1>
+            <p>Master American Sign Language with interactive flashcards and voice recognition</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number" id="cardsStudied">0</div>
+                <div class="stat-label">Cards Studied</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="timeSpent">0m</div>
+                <div class="stat-label">Time Spent</div>
+            </div>
+        </div>
+
+        <div class="achievements">
+            <div class="achievement locked" id="achievement1" title="First Steps: Complete 5 cards"><i class="fas fa-bullseye"></i></div>
+            <div class="achievement locked" id="achievement2" title="Alphabet Master: Learn all 26 letters"><i class="fas fa-font"></i></div>
+            <div class="achievement locked" id="achievement3" title="Speed Demon: Answer 10 cards in under 30 seconds"><i class="fas fa-bolt"></i></div>
+            <div class="achievement locked" id="achievement4" title="Perfectionist: Get 20 correct in a row"><i class="fas fa-trophy"></i></div>
+            <div class="achievement locked" id="achievement5" title="Voice Champion: Use voice recognition 50 times"><i class="fas fa-microphone"></i></div>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('alphabet')"><i class="fas fa-font"></i> Alphabet</button>
+            <button class="mode-btn" onclick="setMode('numbers')"><i class="fas fa-sort-numeric-up"></i> Numbers</button>
+            <button class="mode-btn" onclick="setMode('words')"><i class="fas fa-language"></i> Basic Words</button>
+            <button class="mode-btn" onclick="setMode('phrases')"><i class="fas fa-comments"></i> Common Phrases</button>
+        </div>
+
+        <div class="difficulty-selector">
+            <label style="color: white; margin-right: 10px;">Difficulty:</label>
+            <button class="difficulty-btn active" onclick="setDifficulty('easy')">Easy</button>
+            <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+            <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+        </div>
+
+        <div class="timer" id="timer">Time: 00:00</div>
+        
+        <div class="streak-indicator">
+            <span class="streak-flame" id="streakFlame" style="display: none;"><i class="fas fa-fire"></i></span>
+            <span style="color: white;" id="streakText"></span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+                <div class="card-face card-front">
+                    <div class="sign-display" id="signDisplay">🤟</div>
+                    <div class="sign-text" id="signText">Click to start learning!</div>
+                    <div class="sign-description">Tap the card or use controls below</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="sign-text" id="answerText">Welcome!</div>
+                    <div class="sign-description" id="answerDescription">Ready to learn ASL?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="voice-controls">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecognition()" title="Voice Recognition"><i class="fas fa-microphone"></i></button>
+            <button class="btn btn-secondary" onclick="speakCurrentCard()" title="Hear pronunciation"><i class="fas fa-volume-up"></i></button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="nextCard()"><i class="fas fa-arrow-right"></i> Next Card</button>
+            <button class="btn btn-secondary" onclick="flipCard()"><i class="fas fa-sync-alt"></i> Flip Card</button>
+            <button class="btn btn-success" onclick="markCorrect()"><i class="fas fa-check"></i> Correct</button>
+            <button class="btn btn-danger" onclick="markIncorrect()"><i class="fas fa-times"></i> Incorrect</button>
+            <button class="btn btn-secondary" onclick="shuffleDeck()"><i class="fas fa-random"></i> Shuffle</button>
+            <button class="btn btn-secondary" onclick="resetStats()"><i class="fas fa-redo"></i> Reset</button>
+        </div>
+
+        <div class="advanced-controls">
+            <button class="btn btn-secondary" onclick="exportProgress()"><i class="fas fa-file-export"></i> Export Progress</button>
+            <button class="btn btn-secondary" onclick="enableStudyMode()"><i class="fas fa-graduation-cap"></i> Study Mode</button>
+            <button class="btn btn-secondary" onclick="toggleHighContrast()"><i class="fas fa-adjust"></i> High Contrast</button>
+            <button class="btn btn-secondary" onclick="increaseFontSize()"><i class="fas fa-text-height"></i> Larger Text</button>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <strong><i class="fas fa-keyboard"></i> Keyboard Shortcuts:</strong>
+            Space: Flip Card | N/→: Next Card | C: Correct | X: Incorrect | V: Voice | S: Shuffle | R: Reset
+        </div>
+    </div>
+
+    <div class="confetti" id="confetti"></div>
+
+    <script>
+        // ASL Data Sets
+        const aslData = {
+            alphabet: [
+                { sign: '👌', text: 'A', description: 'Closed fist with thumb touching side of index finger' },
+                { sign: '🤟', text: 'B', description: 'Four fingers extended upward, thumb across palm' },
+                { sign: '🤏', text: 'C', description: 'Curved hand forming the letter C' },
+                { sign: '👆', text: 'D', description: 'Index finger pointing up, other fingers touching thumb' },
+                { sign: '✋', text: 'E', description: 'Fingers curved and touching thumb' },
+                { sign: '👌', text: 'F', description: 'Index finger and thumb form circle, others extended' },
+                { sign: '👍', text: 'G', description: 'Index finger and thumb pointing sideways' },
+                { sign: '🤞', text: 'H', description: 'Index and middle fingers extended sideways' },
+                { sign: '🤙', text: 'I', description: 'Pinky finger extended upward' },
+                { sign: '🤙', text: 'J', description: 'Pinky finger makes J motion' },
+                { sign: '✌️', text: 'K', description: 'Index and middle finger form V, thumb touches ring finger' },
+                { sign: '👆', text: 'L', description: 'Index finger and thumb form L shape' },
+                { sign: '✊', text: 'M', description: 'Closed fist with thumb under first three fingers' },
+                { sign: '✊', text: 'N', description: 'Closed fist with thumb under first two fingers' },
+                { sign: '👌', text: 'O', description: 'Fingers form circle' },
+                { sign: '👆', text: 'P', description: 'Index and middle fingers point down' },
+                { sign: '👇', text: 'Q', description: 'Index finger and thumb point down' },
+                { sign: '🤞', text: 'R', description: 'Index and middle fingers crossed' },
+                { sign: '✊', text: 'S', description: 'Closed fist with thumb in front' },
+                { sign: '👍', text: 'T', description: 'Thumb between index and middle finger' },
+                { sign: '✌️', text: 'U', description: 'Index and middle fingers together pointing up' },
+                { sign: '✌️', text: 'V', description: 'Index and middle fingers apart forming V' },
+                { sign: '🤟', text: 'W', description: 'Index, middle, and ring fingers extended' },
+                { sign: '👆', text: 'X', description: 'Index finger curved like hook' },
+                { sign: '🤙', text: 'Y', description: 'Thumb and pinky extended' },
+                { sign: '👆', text: 'Z', description: 'Index finger draws Z in air' }
+            ],
+            numbers: [
+                { sign: '✊', text: '0', description: 'Closed fist' },
+                { sign: '👆', text: '1', description: 'Index finger extended' },
+                { sign: '✌️', text: '2', description: 'Index and middle fingers extended' },
+                { sign: '🤟', text: '3', description: 'Thumb, index, and middle fingers extended' },
+                { sign: '🖖', text: '4', description: 'Four fingers extended, thumb folded' },
+                { sign: '✋', text: '5', description: 'All five fingers extended' },
+                { sign: '🤙', text: '6', description: 'Thumb and pinky touching, others extended' },
+                { sign: '🤏', text: '7', description: 'Thumb touching ring finger' },
+                { sign: '🤞', text: '8', description: 'Thumb touching middle finger' },
+                { sign: '👌', text: '9', description: 'Thumb touching index finger' }
+            ],
+            words: [
+                { sign: '👋', text: 'Hello', description: 'Wave hand back and forth' },
+                { sign: '🙋', text: 'Thank You', description: 'Hand moves from chin outward' },
+                { sign: '👍', text: 'Good', description: 'Thumb up motion from chin' },
+                { sign: '❤️', text: 'Love', description: 'Both hands cross over heart' },
+                { sign: '🏠', text: 'Home', description: 'Fingertips touch to form roof shape' },
+                { sign: '🍎', text: 'Eat', description: 'Fingers to mouth as if eating' },
+                { sign: '💧', text: 'Water', description: 'W handshape tapping chin' },
+                { sign: '😴', text: 'Sleep', description: 'Hand slides down face' },
+                { sign: '📚', text: 'Book', description: 'Hands open like a book' },
+                { sign: '👨‍👩‍👧‍👦', text: 'Family', description: 'F handshapes form circle' }
+            ],
+            phrases: [
+                { sign: '👋🤟', text: 'Nice to meet you', description: 'Combination of signs for nice, meet, and you' },
+                { sign: '❓🤷', text: 'How are you?', description: 'Question expression with open hands' },
+                { sign: '🙋‍♀️👍', text: 'I am fine', description: 'Point to self, then good sign' },
+                { sign: '🆘❓', text: 'Can you help me?', description: 'Help sign with questioning expression' },
+                { sign: '😊🙏', text: 'Please', description: 'Circular motion on chest' }
+            ]
+        };
+
+        // Application State
+        let currentMode = 'alphabet';
+        let currentDifficulty = 'easy';
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let isRecording = false;
+        let stats = {
+            cardsStudied: 0,
+            correct: 0,
+            incorrect: 0,
+            streak: 0,
+            maxStreak: 0,
+            startTime: Date.now(),
+            voiceUsageCount: 0
+        };
+
+        // Initialize Application
+        function init() {
+            loadProgress();
+            updateDisplay();
+            startTimer();
+            checkAchievements();
+            addKeyboardShortcuts();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            currentCardIndex = 0;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            shuffleDeck();
+            updateDisplay();
+            saveProgress();
+        }
+
+        function setDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateTimerSpeed();
+            saveProgress();
+        }
+
+        function getCurrentDeck() {
+            let deck = [...aslData[currentMode]];
+            
+            if (currentDifficulty === 'medium') {
+                return deck.slice(0, Math.ceil(deck.length * 0.7));
+            } else if (currentDifficulty === 'hard') {
+                return deck.slice(0, Math.ceil(deck.length * 0.5));
+            }
+            
+            return deck;
+        }
+
+        function updateDisplay() {
+            const deck = getCurrentDeck();
+            const currentCard = deck[currentCardIndex];
+            
+            if (!currentCard) return;
+
+            document.getElementById('signDisplay').textContent = currentCard.sign;
+            document.getElementById('signText').textContent = `Sign for: ${currentCard.text}`;
+            document.getElementById('answerText').textContent = currentCard.text;
+            document.getElementById('answerDescription').textContent = currentCard.description;
+
+            // Update progress
+            const progress = ((currentCardIndex + 1) / deck.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+
+            // Update stats
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('cardsStudied').textContent = stats.cardsStudied;
+            
+            const accuracy = stats.cardsStudied > 0 ? 
+                Math.round((stats.correct / (stats.correct + stats.incorrect)) * 100) : 0;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            
+            document.getElementById('streak').textContent = stats.streak;
+            
+            const timeSpent = Math.floor((Date.now() - stats.startTime) / 60000);
+            document.getElementById('timeSpent').textContent = `${timeSpent}m`;
+
+            // Update streak indicator
+            if (stats.streak > 0) {
+                document.getElementById('streakFlame').style.display = 'inline';
+                document.getElementById('streakText').textContent = `${stats.streak} day streak!`;
+            } else {
+                document.getElementById('streakFlame').style.display = 'none';
+                document.getElementById('streakText').textContent = '';
+            }
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            const deck = getCurrentDeck();
+            currentCardIndex = (currentCardIndex + 1) % deck.length;
+            
+            // Reset card to front
+            if (isFlipped) {
+                flipCard();
+            }
+            
+            stats.cardsStudied++;
+            updateDisplay();
+            checkAchievements();
+            saveProgress();
+        }
+
+        function markCorrect() {
+            stats.correct++;
+            stats.streak++;
+            if (stats.streak > stats.maxStreak) {
+                stats.maxStreak = stats.streak;
+            }
+            showFeedback('Correct! Great job! 🎉', 'correct');
+            nextCard();
+        }
+
+        function markIncorrect() {
+            stats.incorrect++;
+            stats.streak = 0;
+            showFeedback('Keep practicing! You\'ll get it next time! 💪', 'incorrect');
+            nextCard();
+        }
+
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 2000);
+        }
+
+        function shuffleDeck() {
+            const deck = getCurrentDeck();
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            currentCardIndex = 0;
+            updateDisplay();
+            saveProgress();
+        }
+
+        function toggleVoiceRecognition() {
+            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+                showFeedback('Speech recognition not supported in this browser', 'incorrect');
+                return;
+            }
+
+            if (!recognition) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = function(event) {
+                    const result = event.results[0][0].transcript.toLowerCase().trim();
+                    const currentCard = getCurrentDeck()[currentCardIndex];
+                    
+                    if (result === currentCard.text.toLowerCase()) {
+                        markCorrect();
+                    } else {
+                        showFeedback(`You said "${result}", correct answer is "${currentCard.text}"`, 'incorrect');
+                        markIncorrect();
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    showFeedback('Speech recognition error. Please try again.', 'incorrect');
+                    stopRecording();
+                };
+
+                recognition.onend = function() {
+                    stopRecording();
+                };
+            }
+
+            if (isRecording) {
+                recognition.stop();
+                return;
+            }
+
+            const voiceBtn = document.getElementById('voiceBtn');
+            voiceBtn.classList.add('recording');
+            isRecording = true;
+            stats.voiceUsageCount++;
+
+            recognition.start();
+            showFeedback('Listening... Say the letter or word you see!', 'correct');
+            saveProgress();
+        }
+
+        function stopRecording() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            voiceBtn.classList.remove('recording');
+            isRecording = false;
+        }
+
+        function speakCurrentCard() {
+            if ('speechSynthesis' in window) {
+                const currentCard = getCurrentDeck()[currentCardIndex];
+                const utterance = new SpeechSynthesisUtterance(currentCard.text);
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            } else {
+                showFeedback('Text-to-speech not supported', 'incorrect');
+            }
+        }
+
+        function resetStats() {
+            stats = {
+                cardsStudied: 0,
+                correct: 0,
+                incorrect: 0,
+                streak: 0,
+                maxStreak: 0,
+                startTime: Date.now(),
+                voiceUsageCount: 0
+            };
+            currentCardIndex = 0;
+            
+            // Reset achievements
+            document.querySelectorAll('.achievement').forEach(achievement => {
+                achievement.classList.remove('unlocked');
+                achievement.classList.add('locked');
+            });
+            
+            updateDisplay();
+            showFeedback('Stats reset! Ready for a fresh start! 🚀', 'correct');
+            saveProgress();
+        }
+
+        function checkAchievements() {
+            // Achievement 1: Complete 5 cards
+            if (stats.cardsStudied >= 5) {
+                unlockAchievement('achievement1');
+            }
+            
+            // Achievement 2: Learn all 26 letters (alphabet mode)
+            if (currentMode === 'alphabet' && stats.cardsStudied >= 26) {
+                unlockAchievement('achievement2');
+            }
+            
+            // Achievement 3: Speed demon (10 cards in under 30 seconds)
+            if (stats.cardsStudied >= 10 && (Date.now() - stats.startTime) < 30000) {
+                unlockAchievement('achievement3');
+            }
+            
+            // Achievement 4: Perfect streak of 20
+            if (stats.streak >= 20) {
+                unlockAchievement('achievement4');
+            }
+            
+            // Achievement 5: Voice recognition champion
+            if (stats.voiceUsageCount >= 50) {
+                unlockAchievement('achievement5');
+            }
+        }
+
+        function unlockAchievement(achievementId) {
+            const achievement = document.getElementById(achievementId);
+            if (achievement.classList.contains('locked')) {
+                achievement.classList.remove('locked');
+                achievement.classList.add('unlocked');
+                showFeedback(`🏆 Achievement Unlocked: ${achievement.title}!`, 'correct');
+                
+                // Add celebration effect
+                triggerConfetti();
+            }
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function startTimer() {
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function updateTimerSpeed() {
+            // Add difficulty-based features
+            const deck = getCurrentDeck();
+            if (currentDifficulty === 'hard') {
+                // Auto-advance cards in hard mode after 10 seconds
+                setTimeout(() => {
+                    if (currentDifficulty === 'hard') {
+                        nextCard();
+                        showFeedback('Time\'s up! Moving to next card', 'incorrect');
+                    }
+                }, 10000);
+            }
+        }
+
+        function addKeyboardShortcuts() {
+            document.addEventListener('keydown', (event) => {
+                switch(event.key) {
+                    case ' ':  // Spacebar to flip
+                        event.preventDefault();
+                        flipCard();
+                        break;
+                    case 'ArrowRight':  // Right arrow for next
+                    case 'n':
+                        event.preventDefault();
+                        nextCard();
+                        break;
+                    case 'c':  // C for correct
+                        event.preventDefault();
+                        markCorrect();
+                        break;
+                    case 'x':  // X for incorrect
+                        event.preventDefault();
+                        markIncorrect();
+                        break;
+                    case 'v':  // V for voice recognition
+                        event.preventDefault();
+                        toggleVoiceRecognition();
+                        break;
+                    case 's':  // S for shuffle
+                        event.preventDefault();
+                        shuffleDeck();
+                        break;
+                    case 'r':  // R for reset
+                        event.preventDefault();
+                        resetStats();
+                        break;
+                }
+            });
+        }
+
+        function enableStudyMode() {
+            // Study mode: focus on incorrectly answered cards
+            showFeedback('Study mode activated! Focus on challenging cards', 'correct');
+        }
+
+        function exportProgress() {
+            const data = {
+                stats: stats,
+                achievements: Array.from(document.querySelectorAll('.achievement.unlocked')).map(el => el.id),
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'asl_progress.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showFeedback('Progress exported successfully! 📊', 'correct');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            showFeedback('High contrast mode toggled', 'correct');
+        }
+
+        function increaseFontSize() {
+            const root = document.documentElement;
+            const currentSize = parseFloat(getComputedStyle(root).fontSize);
+            root.style.fontSize = (currentSize * 1.1) + 'px';
+            showFeedback('Font size increased', 'correct');
+        }
+
+        function saveProgress() {
+            const progress = {
+                stats: stats,
+                currentMode: currentMode,
+                currentDifficulty: currentDifficulty,
+                currentCardIndex: currentCardIndex
+            };
+            localStorage.setItem('aslProgress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const savedProgress = localStorage.getItem('aslProgress');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                stats = progress.stats;
+                currentMode = progress.currentMode;
+                currentDifficulty = progress.currentDifficulty;
+                currentCardIndex = progress.currentCardIndex;
+                
+                // Activate current mode button
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    if (btn.textContent.includes(currentMode.charAt(0).toUpperCase() + currentMode.slice(1))) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Activate current difficulty button
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    if (btn.textContent.toLowerCase() === currentDifficulty) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Load achievements
+                checkAchievements();
+            }
+        }
+
+        // Initialize the application
+        window.onload = init;
+    </script>
+</body>
+</html>
