@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL Flashcards Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 2rem;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .flashcard-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .hand-sign {
+            font-size: 8rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .letter-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .word-display {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .category-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .category-btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn.active,
+        .category-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .voice-controls {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .voice-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 1rem;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .recognition-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feedback-system {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feedback-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-correct {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .feedback-incorrect {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .difficulty-btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .difficulty-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+
+        .timer {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats {
+                gap: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hand-sign {
+                font-size: 6rem;
+            }
+
+            .letter-display {
+                font-size: 3rem;
+            }
+
+            .flashcard {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🤟 ASL Flashcards Pro</div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCards">26</div>
+                <div>Total Cards</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="correctAnswers">0</div>
+                <div>Correct</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">0%</div>
+                <div>Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="streak">0</div>
+                <div>Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="app-container">
+            <div class="category-selector">
+                <button class="category-btn active" data-category="alphabet">Alphabet</button>
+                <button class="category-btn" data-category="numbers">Numbers</button>
+                <button class="category-btn" data-category="common">Common Words</button>
+            </div>
+
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+            </div>
+
+            <div class="timer" id="timer">Ready to start!</div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Card 1 of 26</div>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-front">
+                        <div class="hand-sign" id="handSign">✋</div>
+                        <div class="word-display" id="frontText">Click to see letter</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="letter-display" id="letterDisplay">A</div>
+                        <div class="word-display" id="backText">Letter A</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="flipBtn">Flip Card</button>
+                <button class="btn btn-secondary" id="nextBtn">Next Card</button>
+                <button class="btn btn-secondary" id="prevBtn">Previous Card</button>
+                <button class="btn btn-success" id="shuffleBtn">Shuffle</button>
+                <button class="btn btn-primary" id="autoPlayBtn">Auto Play</button>
+            </div>
+
+            <div class="feedback-system">
+                <button class="feedback-btn feedback-correct" id="correctBtn">✓ Correct</button>
+                <button class="feedback-btn feedback-incorrect" id="incorrectBtn">✗ Incorrect</button>
+            </div>
+
+            <div class="voice-controls">
+                <h3>Voice Recognition Test</h3>
+                <p>Say the letter or word you see!</p>
+                <button class="voice-btn" id="voiceBtn">🎤</button>
+                <button class="btn btn-secondary" id="speechBtn">🔊 Speak</button>
+                <div class="recognition-result" id="recognitionResult" style="display: none;">
+                    <strong>You said:</strong> <span id="recognizedText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-notification" id="achievementNotification">
+        🎉 Achievement Unlocked!
+    </div>
+
+    <script>
+        class ASLFlashcards {
+            constructor() {
+                this.currentCategory = 'alphabet';
+                this.currentDifficulty = 'easy';
+                this.currentIndex = 0;
+                this.isFlipped = false;
+                this.isAutoPlay = false;
+                this.autoPlayInterval = null;
+                this.correctAnswers = 0;
+                this.totalAttempts = 0;
+                this.streak = 0;
+                this.bestStreak = 0;
+                this.startTime = null;
+                this.timerInterval = null;
+                
+                this.recognition = null;
+                this.synth = window.speechSynthesis;
+                
+                this.initSpeechRecognition();
+                this.initCards();
+                this.bindEvents();
+                this.updateDisplay();
+                this.loadProgress();
+            }
+
+            initCards() {
+                this.cards = {
+                    alphabet: [
+                        { sign: '✊', letter: 'A', word: 'Letter A', difficulty: 'easy' },
+                        { sign: '🤟', letter: 'B', word: 'Letter B', difficulty: 'easy' },
+                        { sign: '👌', letter: 'C', word: 'Letter C', difficulty: 'easy' },
+                        { sign: '👆', letter: 'D', word: 'Letter D', difficulty: 'easy' },
+                        { sign: '✋', letter: 'E', word: 'Letter E', difficulty: 'easy' },
+                        { sign: '👌', letter: 'F', word: 'Letter F', difficulty: 'medium' },
+                        { sign: '👆', letter: 'G', word: 'Letter G', difficulty: 'medium' },
+                        { sign: '✌️', letter: 'H', word: 'Letter H', difficulty: 'medium' },
+                        { sign: '🤏', letter: 'I', word: 'Letter I', difficulty: 'easy' },
+                        { sign: '🤙', letter: 'J', word: 'Letter J', difficulty: 'hard' },
+                        { sign: '✌️', letter: 'K', word: 'Letter K', difficulty: 'medium' },
+                        { sign: '👆', letter: 'L', word: 'Letter L', difficulty: 'easy' },
+                        { sign: '✊', letter: 'M', word: 'Letter M', difficulty: 'medium' },
+                        { sign: '✊', letter: 'N', word: 'Letter N', difficulty: 'medium' },
+                        { sign: '👌', letter: 'O', word: 'Letter O', difficulty: 'easy' },
+                        { sign: '👆', letter: 'P', word: 'Letter P', difficulty: 'hard' },
+                        { sign: '👆', letter: 'Q', word: 'Letter Q', difficulty: 'hard' },
+                        { sign: '✌️', letter: 'R', word: 'Letter R', difficulty: 'medium' },
+                        { sign: '✊', letter: 'S', word: 'Letter S', difficulty: 'easy' },
+                        { sign: '👊', letter: 'T', word: 'Letter T', difficulty: 'easy' },
+                        { sign: '✌️', letter: 'U', word: 'Letter U', difficulty: 'medium' },
+                        { sign: '✌️', letter: 'V', word: 'Letter V', difficulty: 'easy' },
+                        { sign: '🤟', letter: 'W', word: 'Letter W', difficulty: 'medium' },
+                        { sign: '👆', letter: 'X', word: 'Letter X', difficulty: 'hard' },
+                        { sign: '🤙', letter: 'Y', word: 'Letter Y', difficulty: 'medium' },
+                        { sign: '👆', letter: 'Z', word: 'Letter Z', difficulty: 'hard' }
+                    ],
+                    numbers: [
+                        { sign: '👆', letter: '1', word: 'One', difficulty: 'easy' },
+                        { sign: '✌️', letter: '2', word: 'Two', difficulty: 'easy' },
+                        { sign: '🤟', letter: '3', word: 'Three', difficulty: 'easy' },
+                        { sign: '🖖', letter: '4', word: 'Four', difficulty: 'medium' },
+                        { sign: '✋', letter: '5', word: 'Five', difficulty: 'easy' },
+                        { sign: '🤙', letter: '6', word: 'Six', difficulty: 'medium' },
+                        { sign: '🤘', letter: '7', word: 'Seven', difficulty: 'medium' },
+                        { sign: '🤞', letter: '8', word: 'Eight', difficulty: 'hard' },
+                        { sign: '👌', letter: '9', word: 'Nine', difficulty: 'medium' },
+                        { sign: '👊', letter: '0', word: 'Zero', difficulty: 'easy' }
+                    ],
+                    common: [
+                        { sign: '👋', letter: 'HELLO', word: 'Hello', difficulty: 'easy' },
+                        { sign: '🙏', letter: 'THANK YOU', word: 'Thank You', difficulty: 'medium' },
+                        { sign: '👍', letter: 'GOOD', word: 'Good', difficulty: 'easy' },
+                        { sign: '❤️', letter: 'LOVE', word: 'Love', difficulty: 'medium' },
+                        { sign: '🏠', letter: 'HOME', word: 'Home', difficulty: 'medium' },
+                        { sign: '🍎', letter: 'EAT', word: 'Eat', difficulty: 'medium' },
+                        { sign: '💧', letter: 'WATER', word: 'Water', difficulty: 'hard' },
+                        { sign: '😊', letter: 'HAPPY', word: 'Happy', difficulty: 'easy' },
+                        { sign: '👋', letter: 'GOODBYE', word: 'Goodbye', difficulty: 'easy' },
+                        { sign: '❓', letter: 'QUESTION', word: 'Question', difficulty: 'hard' }
+                    ]
+                };
+            }
+
+            initSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.lang = 'en-US';
+                    this.recognition.interimResults = false;
+                    this.recognition.maxAlternatives = 1;
+
+                    this.recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript.toUpperCase();
+                        this.handleVoiceResult(result);
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.showVoiceResult('Error: Could not recognize speech');
+                    };
+                }
+            }
+
+            bindEvents() {
+                // Card controls
+                document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextCard());
+                document.getElementById('prevBtn').addEventListener('click', () => this.prevCard());
+                document.getElementById('shuffleBtn').addEventListener('click', () => this.shuffleCards());
+                document.getElementById('autoPlayBtn').addEventListener('click', () => this.toggleAutoPlay());
+                
+                // Flashcard click
+                document.getElementById('flashcard').addEventListener('click', () => this.flipCard());
+                
+                // Feedback
+                document.getElementById('correctBtn').addEventListener('click', () => this.markCorrect());
+                document.getElementById('incorrectBtn').addEventListener('click', () => this.markIncorrect());
+                
+                // Category selection
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchCategory(e.target.dataset.category));
+                });
+                
+                // Difficulty selection
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchDifficulty(e.target.dataset.difficulty));
+                });
+                
+                // Voice controls
+                document.getElementById('voiceBtn').addEventListener('click', () => this.startVoiceRecognition());
+                document.getElementById('speechBtn').addEventListener('click', () => this.speakCurrentCard());
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+            }
+
+            getCurrentCards() {
+                const allCards = this.cards[this.currentCategory];
+                if (this.currentDifficulty === 'easy') {
+                    return allCards.filter(card => card.difficulty === 'easy');
+                } else if (this.currentDifficulty === 'medium') {
+                    return allCards.filter(card => card.difficulty === 'easy' || card.difficulty === 'medium');
+                } else {
+                    return allCards;
+                }
+            }
+
+            updateDisplay() {
+                const cards = this.getCurrentCards();
+                const card = cards[this.currentIndex];
+                
+                if (!card) return;
+                
+                document.getElementById('handSign').textContent = card.sign;
+                document.getElementById('letterDisplay').textContent = card.letter;
+                document.getElementById('frontText').textContent = this.currentCategory === 'alphabet' ? 'Click to see letter' : 'Click to see word';
+                document.getElementById('backText').textContent = card.word;
+                
+                // Update progress
+                document.getElementById('progressFill').style.width = `${((this.currentIndex + 1) / cards.length) * 100}%`;
+                document.getElementById('progressText').textContent = `Card ${this.currentIndex + 1} of ${cards.length}`;
+                document.getElementById('totalCards').textContent = cards.length;
+                
+                // Reset flip state
+                document.getElementById('flashcard').classList.remove('flipped');
+                this.isFlipped = false;
+                
+                this.updateStats();
+                this.startTimer();
+            }
+
+            updateStats() {
+                const accuracy = this.totalAttempts > 0 ? Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0;
+                document.getElementById('correctAnswers').textContent = this.correctAnswers;
+                document.getElementById('accuracy').textContent = `${accuracy}%`;
+                document.getElementById('streak').textContent = this.streak;
+            }
+
+            flipCard() {
+                const flashcard = document.getElementById('flashcard');
+                flashcard.classList.toggle('flipped');
+                this.isFlipped = !this.isFlipped;
+            }
+
+            nextCard() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = (this.currentIndex + 1) % cards.length;
+                this.updateDisplay();
+            }
+
+            prevCard() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = this.currentIndex === 0 ? cards.length - 1 : this.currentIndex - 1;
+                this.updateDisplay();
+            }
+
+            shuffleCards() {
+                const cards = this.getCurrentCards();
+                this.currentIndex = Math.floor(Math.random() * cards.length);
+                this.updateDisplay();
+                this.showAchievement('Cards shuffled! 🔀');
+            }
+
+            toggleAutoPlay() {
+                const btn = document.getElementById('autoPlayBtn');
+                if (this.isAutoPlay) {
+                    clearInterval(this.autoPlayInterval);
+                    this.isAutoPlay = false;
+                    btn.textContent = 'Auto Play';
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-primary');
+                } else {
+                    this.isAutoPlay = true;
+                    btn.textContent = 'Stop Auto';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    this.autoPlayInterval = setInterval(() => {
+                        if (this.isFlipped) {
+                            this.nextCard();
+                        } else {
+                            this.flipCard();
+                        }
+                    }, 3000);
+                }
+            }
+
+            switchCategory(category) {
+                this.currentCategory = category;
+                this.currentIndex = 0;
+                
+                // Update active button
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+                
+                this.updateDisplay();
+            }
+
+            switchDifficulty(difficulty) {
+                this.currentDifficulty = difficulty;
+                this.currentIndex = 0;
+                
+                // Update active button
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+                
+                this.updateDisplay();
+            }
+
+            markCorrect() {
+                this.correctAnswers++;
+                this.totalAttempts++;
+                this.streak++;
+                
+                if (this.streak > this.bestStreak) {
+                    this.bestStreak = this.streak;
+                    this.showAchievement(`New best streak: ${this.streak}! 🔥`);
+                }
+                
+                if (this.streak % 5 === 0) {
+                    this.showAchievement(`${this.streak} in a row! You're on fire! 🚀`);
+                }
+                
+                this.updateStats();
+                this.saveProgress();
+                
+                setTimeout(() => this.nextCard(), 1000);
+            }
+
+            markIncorrect() {
+                this.totalAttempts++;
+                this.streak = 0;
+                this.updateStats();
+                this.saveProgress();
+            }
+
+            startVoiceRecognition() {
+                if (!this.recognition) {
+                    alert('Speech recognition is not supported in your browser.');
+                    return;
+                }
+                
+                const btn = document.getElementById('voiceBtn');
+                btn.classList.add('recording');
+                btn.textContent = '🔴';
+                
+                this.recognition.start();
+                
+                setTimeout(() => {
+                    btn.classList.remove('recording');
+                    btn.textContent = '🎤';
+                }, 5000);
+            }
+
+            handleVoiceResult(result) {
+                const cards = this.getCurrentCards();
+                const currentCard = cards[this.currentIndex];
+                const expected = currentCard.letter.toUpperCase();
+                
+                this.showVoiceResult(result);
+                
+                if (result.includes(expected) || expected.includes(result)) {
+                    this.showAchievement('Correct! Great pronunciation! 🎯');
+                    this.markCorrect();
+                } else {
+                    this.showVoiceResult(`You said: "${result}" - Expected: "${expected}"`);
+                }
+            }
+
+            showVoiceResult(text) {
+                const resultDiv = document.getElementById('recognitionResult');
+                const textSpan = document.getElementById('recognizedText');
+                textSpan.textContent = text;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            speakCurrentCard() {
+                const cards = this.getCurrentCards();
+                const currentCard = cards[this.currentIndex];
+                
+                const utterance = new SpeechSynthesisUtterance(currentCard.word);
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                this.synth.speak(utterance);
+            }
+
+            handleKeyboard(e) {
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        this.flipCard();
+                        break;
+                    case 'c':
+                        this.markCorrect();
+                        break;
+                    case 'x':
+                        this.markIncorrect();
+                        break;
+                }
+            }
+
+            startTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+                
+                this.startTime = Date.now();
+                this.timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('timer').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            showAchievement(message) {
+                const notification = document.getElementById('achievementNotification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            saveProgress() {
+                const progress = {
+                    correctAnswers: this.correctAnswers,
+                    totalAttempts: this.totalAttempts,
+                    bestStreak: this.bestStreak,
+                    currentCategory: this.currentCategory,
+                    currentDifficulty: this.currentDifficulty
+                };
+                
+                // Store in memory (localStorage not available in Claude.ai)
+                this.savedProgress = progress;
+            }
+
+            loadProgress() {
+                // In a real application, this would load from localStorage
+                // For now, we'll just initialize with defaults
+                if (this.savedProgress) {
+                    this.correctAnswers = this.savedProgress.correctAnswers || 0;
+                    this.totalAttempts = this.savedProgress.totalAttempts || 0;
+                    this.bestStreak = this.savedProgress.bestStreak || 0;
+                    this.currentCategory = this.savedProgress.currentCategory || 'alphabet';
+                    this.currentDifficulty = this.savedProgress.currentDifficulty || 'easy';
+                }
+            }
+
+            // Advanced features for impressive functionality
+            generateCustomQuiz() {
+                const cards = this.getCurrentCards();
+                const quizCards = [];
+                
+                // Select random cards based on difficulty
+                const numCards = Math.min(10, cards.length);
+                const selectedIndices = new Set();
+                
+                while (selectedIndices.size < numCards) {
+                    selectedIndices.add(Math.floor(Math.random() * cards.length));
+                }
+                
+                selectedIndices.forEach(index => {
+                    quizCards.push(cards[index]);
+                });
+                
+                return quizCards;
+            }
+
+            exportProgress() {
+                const progress = {
+                    date: new Date().toISOString(),
+                    correctAnswers: this.correctAnswers,
+                    totalAttempts: this.totalAttempts,
+                    accuracy: this.totalAttempts > 0 ? Math.round((this.correctAnswers / this.totalAttempts) * 100) : 0,
+                    bestStreak: this.bestStreak,
+                    currentStreak: this.streak,
+                    category: this.currentCategory,
+                    difficulty: this.currentDifficulty
+                };
+                
+                const dataStr = JSON.stringify(progress, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'asl-flashcards-progress.json';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                this.showAchievement('Progress exported! 📊');
+            }
+
+            resetProgress() {
+                if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                    this.correctAnswers = 0;
+                    this.totalAttempts = 0;
+                    this.streak = 0;
+                    this.bestStreak = 0;
+                    this.currentIndex = 0;
+                    this.updateStats();
+                    this.updateDisplay();
+                    this.showAchievement('Progress reset! Start fresh! 🔄');
+                }
+            }
+
+            // Gamification features
+            calculateLevel() {
+                return Math.floor(this.correctAnswers / 10) + 1;
+            }
+
+            getNextLevelProgress() {
+                const currentLevel = this.calculateLevel();
+                const pointsForCurrentLevel = (currentLevel - 1) * 10;
+                const pointsForNextLevel = currentLevel * 10;
+                const currentProgress = this.correctAnswers - pointsForCurrentLevel;
+                const totalNeeded = pointsForNextLevel - pointsForCurrentLevel;
+                
+                return {
+                    level: currentLevel,
+                    progress: currentProgress,
+                    total: totalNeeded,
+                    percentage: (currentProgress / totalNeeded) * 100
+                };
+            }
+
+            // Performance analytics
+            getPerformanceInsights() {
+                if (this.totalAttempts === 0) return null;
+                
+                const accuracy = (this.correctAnswers / this.totalAttempts) * 100;
+                let insight = "";
+                
+                if (accuracy >= 90) {
+                    insight = "Excellent! You're mastering ASL! 🌟";
+                } else if (accuracy >= 75) {
+                    insight = "Great progress! Keep practicing! 📈";
+                } else if (accuracy >= 60) {
+                    insight = "Good effort! Focus on challenging signs. 💪";
+                } else {
+                    insight = "Keep practicing! Every expert was once a beginner. 🌱";
+                }
+                
+                return {
+                    accuracy: accuracy.toFixed(1),
+                    insight: insight,
+                    recommendations: this.getRecommendations()
+                };
+            }
+
+            getRecommendations() {
+                const recommendations = [];
+                
+                if (this.streak < 3) {
+                    recommendations.push("Try to build a streak by focusing on easier signs first");
+                }
+                
+                if (this.totalAttempts < 20) {
+                    recommendations.push("Practice more cards to improve your skills");
+                }
+                
+                const accuracy = this.totalAttempts > 0 ? (this.correctAnswers / this.totalAttempts) * 100 : 0;
+                if (accuracy < 70) {
+                    recommendations.push("Consider using the voice recognition feature for better learning");
+                    recommendations.push("Use the speech synthesis to hear correct pronunciations");
+                }
+                
+                return recommendations;
+            }
+
+            // Study mode features
+            enterStudyMode() {
+                this.studyMode = true;
+                this.studyStartTime = Date.now();
+                this.studyCorrect = 0;
+                this.studyTotal = 0;
+                
+                this.showAchievement('Study mode activated! Focus time! 📚');
+                
+                // Auto-flip after 3 seconds in study mode
+                this.studyInterval = setInterval(() => {
+                    if (!this.isFlipped) {
+                        this.flipCard();
+                    }
+                }, 3000);
+            }
+
+            exitStudyMode() {
+                if (this.studyMode) {
+                    clearInterval(this.studyInterval);
+                    this.studyMode = false;
+                    
+                    const studyTime = Math.floor((Date.now() - this.studyStartTime) / 1000);
+                    const studyAccuracy = this.studyTotal > 0 ? Math.round((this.studyCorrect / this.studyTotal) * 100) : 0;
+                    
+                    this.showAchievement(`Study session complete! ${studyTime}s, ${studyAccuracy}% accuracy 🎓`);
+                }
+            }
+
+            // Accessibility features
+            enableHighContrast() {
+                document.body.classList.add('high-contrast');
+            }
+
+            disableHighContrast() {
+                document.body.classList.remove('high-contrast');
+            }
+
+            increaseFontSize() {
+                const root = document.documentElement;
+                const currentSize = parseFloat(getComputedStyle(root).fontSize);
+                root.style.fontSize = (currentSize * 1.1) + 'px';
+            }
+
+            decreaseFontSize() {
+                const root = document.documentElement;
+                const currentSize = parseFloat(getComputedStyle(root).fontSize);
+                root.style.fontSize = (currentSize * 0.9) + 'px';
+            }
+        }
+
+        // Initialize the application
+        const app = new ASLFlashcards();
+        
+        // Add extra control buttons dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const controlsDiv = document.querySelector('.controls');
+            
+            // Add advanced buttons
+            const studyBtn = document.createElement('button');
+            studyBtn.className = 'btn btn-success';
+            studyBtn.textContent = 'Study Mode';
+            studyBtn.onclick = () => app.enterStudyMode();
+            controlsDiv.appendChild(studyBtn);
+            
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn btn-primary';
+            exportBtn.textContent = 'Export Progress';
+            exportBtn.onclick = () => app.exportProgress();
+            controlsDiv.appendChild(exportBtn);
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'btn btn-secondary';
+            resetBtn.textContent = 'Reset Progress';
+            resetBtn.onclick = () => app.resetProgress();
+            controlsDiv.appendChild(resetBtn);
+            
+            // Add keyboard shortcuts info
+            const shortcutsInfo = document.createElement('div');
+            shortcutsInfo.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: rgba(255, 255, 255, 0.9);
+                padding: 10px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            `;
+            shortcutsInfo.innerHTML = `
+                <strong>Keyboard Shortcuts:</strong><br>
+                Space: Flip card<br>
+                ← →: Navigate<br>
+                C: Mark correct<br>
+                X: Mark incorrect<br>
+                Ctrl+S: Shuffle
+            `;
+            document.body.appendChild(shortcutsInfo);
+            
+            // Add performance insights panel
+            const insightsPanel = document.createElement('div');
+            insightsPanel.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 15px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                max-width: 250px;
+                z-index: 1000;
+            `;
+            insightsPanel.innerHTML = `
+                <h4 style="margin-bottom: 10px;">Performance Insights</h4>
+                <div id="insights-content">Start practicing to see insights!</div>
+            `;
+            document.body.appendChild(insightsPanel);
+            
+            // Update insights periodically
+            setInterval(() => {
+                const insights = app.getPerformanceInsights();
+                if (insights) {
+                    const level = app.calculateLevel();
+                    const levelProgress = app.getNextLevelProgress();
+                    
+                    document.getElementById('insights-content').innerHTML = `
+                        <div><strong>Level:</strong> ${level}</div>
+                        <div><strong>Accuracy:</strong> ${insights.accuracy}%</div>
+                        <div style="margin: 10px 0;">
+                            <div style="background: #eee; height: 4px; border-radius: 2px;">
+                                <div style="background: #667eea; height: 100%; width: ${levelProgress.percentage}%; border-radius: 2px;"></div>
+                            </div>
+                            <small>${levelProgress.progress}/${levelProgress.total} to next level</small>
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">${insights.insight}</div>
+                    `;
+                }
+            }, 2000);
+        });
+        
+        // Add CSS for high contrast mode
+        const style = document.createElement('style');
+        style.textContent = `
+            .high-contrast {
+                filter: contrast(150%) brightness(110%);
+            }
+            
+            .high-contrast .flashcard-front {
+                background: #000 !important;
+                color: #fff !important;
+            }
+            
+            .high-contrast .flashcard-back {
+                background: #fff !important;
+                color: #000 !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add service worker for offline functionality (commented out for Claude.ai compatibility)
+        /*
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        }
+        */
+        
+        console.log('🤟 ASL Flashcards Pro - Loaded successfully!');
+        console.log('Features: Voice recognition, Speech synthesis, Progress tracking, Gamification, Accessibility');
+    </script>
+</body>
+</html>
